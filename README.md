@@ -13,7 +13,7 @@ The chess AI we create should be able to:
 - Potentially beat a human opponent
 
 ### Project Drawing
-![Image](src)
+![Image](sketchUI_AI.jpg)
 
 ### Found Information
 Easy guide to building a simple chess AI: [Link](https://medium.freecodecamp.org/simple-chess-ai-step-by-step-1d55a9266977)

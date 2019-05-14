@@ -3,13 +3,16 @@
 
 # import the pygame module, so you can use it
 import pygame
+import time
 
 boardSquareSize = 64
 pieceSize = 45
 board = {}
-screen_width = 800
+screen_width = 1088
 screen_height = 512
+playClockTime = 90
 screen = pygame.display.set_mode((screen_width,screen_height))
+startTime = time.time()
 
 def getBoard(row, col):
     return board[(row,col)]
@@ -40,7 +43,7 @@ def main():
     board = pygame.image.load("board.png")
 
     screen.fill((255,255,255))
-    screen.blit(board, (0,0))
+    screen.blit(board, (288,0))
 
     
     #Pawns
@@ -70,8 +73,10 @@ def main():
     screen.blit(blackKing, getBoard(0,4))
 
     #Text
-    message_display('Captured by AI', (517,0))
-    message_display('Captured by User', (517,256))
+    message_display('Game Time:', (5,0))
+    message_display('Play Timer:', (5,70))
+    message_display('Captured by AI', (805,0))
+    message_display('Captured by User', (805,256))
     
     # update the screen to make the changes visible (fullscreen update)
     pygame.display.flip()
@@ -84,6 +89,9 @@ def main():
      
     # main loop
     while running:
+        message_display(calcClock(startTime, time.time()), (5,35))
+        message_display(calcTimer(startTime,time.time()), (5,105))
+        pygame.display.update()
         # event handling, gets all event from the event queue
         for event in pygame.event.get():
             # only do something if the event is of type QUIT
@@ -93,6 +101,23 @@ def main():
 
         # check if the smily is still on screen, if not change direction
 
+def calcClock(timeStart, currentTime):
+    secs = int(currentTime - timeStart)
+    hours = int(secs/3600)
+    secs = secs - 3600 * hours
+    mins = int(secs/60)
+    secs = secs - 60 * mins
+    clock = '%s:%s:%s' % (str(hours).zfill(2), str(mins).zfill(2), str(secs).zfill(2))
+    return str(clock)
+
+def calcTimer(timeStart, currentTime):
+    secs = int(currentTime - timeStart)
+    secs = playClockTime - secs
+    mins = int(secs/60)
+    secs = secs - 60 * mins
+    clock = '%s:%s' % (str(mins).zfill(2), str(secs).zfill(2))
+    return str(clock)
+
 def text_objects(text, font):
     textSurface = font.render(text, True, (0,0,0))
     return textSurface, textSurface.get_rect()
@@ -101,12 +126,14 @@ def message_display(text, pos):
     mediumText = pygame.font.Font('freesansbold.ttf',30)
     TextSurf, TextRect = text_objects(text, mediumText)
     TextRect = (pos[0],pos[1])
+    width, height = mediumText.size(text)
+    pygame.draw.rect(screen, (255,255,255), (pos[0], pos[1], width+2, height))
     screen.blit(TextSurf, TextRect)
 
 def buildBoardSpaces():
     padding = int((boardSquareSize-pieceSize)/2)
     for col in range(0, 8):
-        colSpace = boardSquareSize * col + padding
+        colSpace = boardSquareSize * col + padding + 288
         for row in range(0, 8):
             rowSpace = boardSquareSize * row + padding
             board[(row,col)] = (colSpace, rowSpace)

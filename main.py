@@ -45,7 +45,7 @@ def main():
     screen.fill((255,255,255))
     screen.blit(board, (288,0))
 
-    
+    #Real
     #Pawns
     for pawnI in range(8):
         screen.blit(whitePawn, getBoard(6,pawnI))
@@ -71,6 +71,45 @@ def main():
     #Kings
     screen.blit(whiteKing, getBoard(7,4))
     screen.blit(blackKing, getBoard(0,4))
+
+    ##Fake
+    #screen.blit(whitePawn, getBoard(6,0)) #g
+    #screen.blit(whitePawn, getBoard(3,1)) #g
+    #screen.blit(whitePawn, getBoard(6,2)) #g
+    #screen.blit(whitePawn, getBoard(5,3)) #g
+    #screen.blit(whitePawn, getBoard(3,4)) #g
+    #screen.blit(whitePawn, (805, 35)) #g
+    #screen.blit(whitePawn, getBoard(6,6)) #g
+    #screen.blit(whitePawn, getBoard(6,7)) #g
+    #screen.blit(blackPawn, getBoard(1,0)) #g
+    #screen.blit(blackPawn, getBoard(1,1)) #g
+    #screen.blit(blackPawn, getBoard(3,2)) #g
+    #screen.blit(blackPawn, getBoard(2,3)) #g
+    #screen.blit(blackPawn, getBoard(1,4)) #g
+    #screen.blit(blackPawn, getBoard(1,5)) #g
+    #screen.blit(blackPawn, getBoard(2,6)) #g
+    #screen.blit(blackPawn, getBoard(3,7)) #g
+    ##Rooks
+    #screen.blit(whiteRook, getBoard(7,0)) #g
+    #screen.blit(whiteRook, getBoard(7,7)) #g
+    #screen.blit(blackKnight, getBoard(0,0)) #g
+    #screen.blit(blackKnight, getBoard(0,7)) #g
+    ##Knights
+    #screen.blit(whiteKnight, (855, 35)) #g
+    #screen.blit(whiteKnight, getBoard(7,6)) #g
+    #screen.blit(blackRook, (805, 291)) #g
+    #screen.blit(blackRook, getBoard(0,6)) #g
+    ##Bishops
+    #screen.blit(whiteBishop, getBoard(7,2)) #g
+    #screen.blit(whiteBishop, getBoard(7,5)) #g
+    #screen.blit(blackBishop, getBoard(1,3)) #g
+    #screen.blit(blackBishop, getBoard(2,7)) #g
+    ##Queens
+    #screen.blit(whiteQueen, getBoard(7,3)) #g
+    #screen.blit(blackQueen, getBoard(5,2)) #g
+    ##Kings
+    #screen.blit(whiteKing, getBoard(7,4)) #g
+    #screen.blit(blackKing, getBoard(0,4)) #g
 
     #Text
     message_display('Game Time:', (5,0))

@@ -71,6 +71,7 @@ def main():
     #Kings
     screen.blit(whiteKing, getBoard(7,4))
     screen.blit(blackKing, getBoard(0,4))
+    #hi
 
     ##Fake
     #screen.blit(whitePawn, getBoard(6,0)) #g

@@ -16,7 +16,7 @@ The chess AI we create should be able to:
 ![Sketch](sketchUI_AI.jpg)
 
 ### Milestone 3 Poster
-![Poster](Milestone 3.jpg)
+![Poster](milestone3.jpg)
 
 ### Found Information
 Easy guide to building a simple chess AI: [Link](https://medium.freecodecamp.org/simple-chess-ai-step-by-step-1d55a9266977)

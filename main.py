@@ -1,5 +1,5 @@
 #main.py v1.0
-#Grant Ludwig
+#Grant Ludwig and Mitch Downey
 
 # import the pygame module, so you can use it
 import pygame
@@ -13,6 +13,22 @@ screen_height = 512
 playClockTime = 90
 screen = pygame.display.set_mode((screen_width,screen_height))
 startTime = time.time()
+
+# generalized class for game pieces
+class gamePiece():
+
+    def __init__(self, pieceType,initPos):
+        self.Piece = pieceType # pygame image of the piece
+        self.Pos = initPos # position of the piece, type = (float,float)
+        # add more attributes as needed
+
+    def movePiece(self,targetPos):
+        if validMove(targetPos): # should this just be a global check?
+            self.Pos = targetPos
+
+    def getPos(self):
+        return self.Pos
+
 
 def getBoard(row, col):
     return board[(row,col)]
@@ -44,6 +60,9 @@ def main():
 
     screen.fill((255,255,255))
     screen.blit(board, (288,0))
+
+    # thinking of making a list for game pieces?
+    # maybe just loop through em
 
     #Real
     #Pawns
@@ -134,8 +153,16 @@ def main():
         pygame.display.update()
         # event handling, gets all event from the event queue
         for event in pygame.event.get():
+            # detection for clicking on a piece
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mousePos = event.pos
+                #do something here
+                    # select what piece you clicked on.
+                    # if there's a piece selected, then check if it can move to the
+                    # position that you selected.
+                    # if yes, move the piece, else do nothing
             # only do something if the event is of type QUIT
-            if event.type == pygame.QUIT:
+            elif event.type == pygame.QUIT:
                 # change the value to False, to exit the main loop
                 running = False
 

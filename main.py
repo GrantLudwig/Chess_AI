@@ -14,15 +14,25 @@ playClockTime = 90
 screen = pygame.display.set_mode((screen_width,screen_height))
 startTime = time.time()
 
+#trying something out here
+pieceList = [] # list of all pieces, for purposes of display...i think?
+posBoard = [['ee' for x in range(8)] for y in range(8)] 
+# 2d list representing the board, each location is one square
+# For example, a black pawn would be 'bp', empty is 'ee'
+
 # generalized class for game pieces
 class gamePiece():
 
-    def __init__(self, pieceType,initPos):
-        self.Piece = pieceType # pygame image of the piece
+    def __init__(self, pieceImg, pieceType, initPos, color):
+        self.Piece = pieceImg # pygame image of the piece
         self.Pos = initPos # position of the piece, type = (float,float)
+        self.Color = color # single char, 'b' or 'w'
+        self.Type = pieceType # single char, what piece type it is
+        # 'r' = rook, 'n' = knight, 'b' = bishop
+        # 'q' = queen, 'k' = king, 'p' = pawn
         # add more attributes as needed
 
-    def movePiece(self,targetPos):
+    def movePiece(self, targetPos):
         if validMove(targetPos): # should this just be a global check?
             self.Pos = targetPos
 
@@ -66,31 +76,60 @@ def main():
 
     #Real
     #Pawns
-    for pawnI in range(8):
-        screen.blit(whitePawn, getBoard(6,pawnI))
-        screen.blit(blackPawn, getBoard(1,pawnI))
+    #for pawnI in range(8):
+    #    screen.blit(whitePawn, getBoard(6,pawnI))
+    #    screen.blit(blackPawn, getBoard(1,pawnI))
     #Rooks
-    screen.blit(whiteRook, getBoard(7,0))
-    screen.blit(whiteRook, getBoard(7,7))
-    screen.blit(blackKnight, getBoard(0,0))
-    screen.blit(blackKnight, getBoard(0,7))
+    #screen.blit(whiteRook, getBoard(7,0))
+    #screen.blit(whiteRook, getBoard(7,7))
+    #screen.blit(blackKnight, getBoard(0,0))
+    #screen.blit(blackKnight, getBoard(0,7))
     #Knights
-    screen.blit(whiteKnight, getBoard(7,1))
-    screen.blit(whiteKnight, getBoard(7,6))
-    screen.blit(blackRook, getBoard(0,1))
-    screen.blit(blackRook, getBoard(0,6))
+    #screen.blit(whiteKnight, getBoard(7,1))
+    #screen.blit(whiteKnight, getBoard(7,6))
+    #screen.blit(blackRook, getBoard(0,1))
+    #screen.blit(blackRook, getBoard(0,6))
     #Bishops
-    screen.blit(whiteBishop, getBoard(7,2))
-    screen.blit(whiteBishop, getBoard(7,5))
-    screen.blit(blackBishop, getBoard(0,2))
-    screen.blit(blackBishop, getBoard(0,5))
+    #screen.blit(whiteBishop, getBoard(7,2))
+    #screen.blit(whiteBishop, getBoard(7,5))
+    #screen.blit(blackBishop, getBoard(0,2))
+    #screen.blit(blackBishop, getBoard(0,5))
     #Queens
-    screen.blit(whiteQueen, getBoard(7,3))
-    screen.blit(blackQueen, getBoard(0,3))
+    #screen.blit(whiteQueen, getBoard(7,3))
+    #screen.blit(blackQueen, getBoard(0,3))
     #Kings
-    screen.blit(whiteKing, getBoard(7,4))
-    screen.blit(blackKing, getBoard(0,4))
+    #screen.blit(whiteKing, getBoard(7,4))
+    #screen.blit(blackKing, getBoard(0,4))
     #hi
+
+    # generalized pieces
+    for pawnI in range(8):
+        pieceList.append(gamePiece(whitePawn, 'p', getBoard(6,pawnI), 'w'))
+        pieceList.append(gamePiece(blackPawn, 'p', getBoard(1,pawnI), 'b'))
+    #Rooks
+    pieceList.append(gamePiece(whiteRook, 'r', getBoard(7,0), 'w'))
+    pieceList.append(gamePiece(whiteRook, 'r', getBoard(7,7), 'w'))
+    pieceList.append(gamePiece(blackRook, 'r', getBoard(0,0), 'b'))
+    pieceList.append(gamePiece(blackRook, 'r', getBoard(0,7), 'b'))
+    #Knights
+    pieceList.append(gamePiece(whiteKnight, 'n', getBoard(7,1), 'w'))
+    pieceList.append(gamePiece(whiteKnight, 'n', getBoard(7,6), 'w'))
+    pieceList.append(gamePiece(blackKnight, 'n', getBoard(0,1), 'b'))
+    pieceList.append(gamePiece(blackKnight, 'n', getBoard(0,6), 'b'))
+    #Bishops
+    pieceList.append(gamePiece(whiteBishop, 'b', getBoard(7,2), 'w'))
+    pieceList.append(gamePiece(whiteBishop, 'b', getBoard(7,5), 'w'))
+    pieceList.append(gamePiece(blackBishop, 'b', getBoard(0,2), 'b'))
+    pieceList.append(gamePiece(blackBishop, 'b', getBoard(0,5), 'b'))
+    #Queens
+    pieceList.append(gamePiece(whiteQueen, 'q', getBoard(7,3), 'w'))
+    pieceList.append(gamePiece(blackQueen, 'q', getBoard(0,3), 'b'))
+    #Kings
+    pieceList.append(gamePiece(whiteKing, 'k', getBoard(7,4), 'w'))
+    pieceList.append(gamePiece(blackKing, 'k', getBoard(0,4), 'b'))
+
+    for piece in pieceList:
+    	screen.blit(piece.Piece, piece.getPos())
 
     ##Fake
     #screen.blit(whitePawn, getBoard(6,0)) #g

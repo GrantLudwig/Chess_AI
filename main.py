@@ -45,7 +45,6 @@ def getBoard(row, col):
  
 # define a main function
 def main():
-     
     # initialize the pygame module
     pygame.init()
     # load and set the logo
@@ -102,32 +101,51 @@ def main():
     #screen.blit(blackKing, getBoard(0,4))
     #hi
 
-    # generalized pieces
+    # generalized piece initialization
     for pawnI in range(8):
         pieceList.append(gamePiece(whitePawn, 'p', getBoard(6,pawnI), 'w'))
+        posBoard[6][pawnI] = 'wp'
         pieceList.append(gamePiece(blackPawn, 'p', getBoard(1,pawnI), 'b'))
+        posBoard[1][pawnI] = 'bp'
     #Rooks
     pieceList.append(gamePiece(whiteRook, 'r', getBoard(7,0), 'w'))
     pieceList.append(gamePiece(whiteRook, 'r', getBoard(7,7), 'w'))
+    posBoard[7][0] = 'wr'
+    posBoard[7][7] = 'wr'
     pieceList.append(gamePiece(blackRook, 'r', getBoard(0,0), 'b'))
     pieceList.append(gamePiece(blackRook, 'r', getBoard(0,7), 'b'))
+    posBoard[0][0] = 'br'
+    posBoard[0][7] = 'br'
     #Knights
     pieceList.append(gamePiece(whiteKnight, 'n', getBoard(7,1), 'w'))
     pieceList.append(gamePiece(whiteKnight, 'n', getBoard(7,6), 'w'))
+    posBoard[7][1] = 'wn'
+    posBoard[7][6] = 'wn'
     pieceList.append(gamePiece(blackKnight, 'n', getBoard(0,1), 'b'))
     pieceList.append(gamePiece(blackKnight, 'n', getBoard(0,6), 'b'))
+    posBoard[0][1] = 'bn'
+    posBoard[0][6] = 'bn'
     #Bishops
     pieceList.append(gamePiece(whiteBishop, 'b', getBoard(7,2), 'w'))
     pieceList.append(gamePiece(whiteBishop, 'b', getBoard(7,5), 'w'))
+    posBoard[7][2] = 'wb'
+    posBoard[7][5] = 'wb'
     pieceList.append(gamePiece(blackBishop, 'b', getBoard(0,2), 'b'))
     pieceList.append(gamePiece(blackBishop, 'b', getBoard(0,5), 'b'))
+    posBoard[0][2] = 'bb'
+    posBoard[0][5] = 'bb'
     #Queens
     pieceList.append(gamePiece(whiteQueen, 'q', getBoard(7,3), 'w'))
     pieceList.append(gamePiece(blackQueen, 'q', getBoard(0,3), 'b'))
+    posBoard[7][3] = 'wq'
+    posBoard[0][3] = 'bq'
     #Kings
     pieceList.append(gamePiece(whiteKing, 'k', getBoard(7,4), 'w'))
     pieceList.append(gamePiece(blackKing, 'k', getBoard(0,4), 'b'))
+    posBoard[7][4] = 'wk'
+    posBoard[0][4] = 'bk'
 
+    # all pieces displayed by this
     for piece in pieceList:
     	screen.blit(piece.Piece, piece.getPos())
 

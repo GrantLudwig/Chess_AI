@@ -28,16 +28,46 @@ class gamePiece():
         self.Pos = initPos # position of the piece, type = (float,float)
         self.Color = color # single char, 'b' or 'w'
         self.Type = pieceType # single char, what piece type it is
+        self.First = True # for pawns, if this is their first move or not
         # 'r' = rook, 'n' = knight, 'b' = bishop
         # 'q' = queen, 'k' = king, 'p' = pawn
         # add more attributes as needed
 
     def movePiece(self, targetPos):
-        if validMove(targetPos): # should this just be a global check?
+        #if validMove(targetPos):  # need to iron out required variables/rethink how position is stored
             self.Pos = targetPos
 
     def getPos(self):
         return self.Pos
+
+def validMove(piece, targetPos, currentPos):
+    curY,curX = currentPos
+    tarY,tarX = targetPos
+    if piece.Type == 'p': #pawn
+        if piece.Color == 'b': #black
+            if piece.First: #first move
+                if tarY - curY <= 2: #within range
+                    if posBoard[tarY][tarX] == 'ee' and posBoard[curY + 1][curX] == 'ee': #empty space
+                        return True
+                    elif posBoard[tarY][tarX][0] == 'w': #attacking a white piece
+                        return True
+            elif tarY - curY <= 1: #within range
+                    if posBoard[tarY][tarX] == 'ee': #empty space
+                        return True
+                    elif posBoard[tarY][tarX][0] == 'w': #attacking a white piece
+                        return True
+        elif piece.Color == 'w': #white
+            if piece.First: #first move
+                if tarY - curY <= 2: #within range
+                    if posBoard[tarY][tarX] == 'ee' and posBoard[curY + 1][curX] == 'ee': #empty space
+                        return True
+                    elif posBoard[tarY][tarX][0] == 'b': #attacking a white piece
+                        return True
+            elif tarY - curY <= 1: #within range
+                    if posBoard[tarY][tarX] == 'ee': #empty space
+                        return True
+                    elif posBoard[tarY][tarX][0] == 'b': #attacking a white piece
+                        return True
 
 
 def getBoard(row, col):

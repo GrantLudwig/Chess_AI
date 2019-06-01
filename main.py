@@ -40,34 +40,54 @@ class gamePiece():
     def getPos(self):
         return self.Pos
 
+
+# DUE TO HOW POSITIONS ARE CURRENTLY STORED, THIS FUNCTION WILL NOT WORK
+# need to rework position storage before implementing this
 def validMove(piece, targetPos, currentPos):
     curY,curX = currentPos
     tarY,tarX = targetPos
+    allyColor = piece.Color
+    enemyColor = ''
+    if allyColor == 'b':
+        enemyColor =  'w'
+    else:
+        enemyColor = 'b'
     if piece.Type == 'p': #pawn
-        if piece.Color == 'b': #black
-            if piece.First: #first move
-                if tarY - curY <= 2: #within range
-                    if posBoard[tarY][tarX] == 'ee' and posBoard[curY + 1][curX] == 'ee': #empty space
+        if piece.First: #first move
+            if tarY - curY <= 2: #within range
+                if posBoard[tarY][tarX] == 'ee' and posBoard[curY + 1][curX] == 'ee': #empty space
+                    return True
+                elif posBoard[tarY][tarX][0] == enemyColor:
+                    return True
+        elif tarY - curY <= 1: #within range
+                if posBoard[tarY][tarX] == 'ee': #empty space
+                    return True
+                elif posBoard[tarY][tarX][0] == enemyColor:
+                    return True
+    elif pieceType == 'r': #rooks
+        if tarX == curX:
+            for y in range(curY + 1,tarY):
+                if posBoard[y][curX] != 'ee':
+                    if posBoard[y][curX][0] == enemyColor:
                         return True
-                    elif posBoard[tarY][tarX][0] == 'w': #attacking a white piece
+                    else:
+                        return False
+        elif tarY == curY:
+            for x in range(curX + 1,tarX):
+                if posBoard[curY][x] != 'ee':
+                    if posBoard[curY][x][0] == enemyColor:
                         return True
-            elif tarY - curY <= 1: #within range
-                    if posBoard[tarY][tarX] == 'ee': #empty space
-                        return True
-                    elif posBoard[tarY][tarX][0] == 'w': #attacking a white piece
-                        return True
-        elif piece.Color == 'w': #white
-            if piece.First: #first move
-                if tarY - curY <= 2: #within range
-                    if posBoard[tarY][tarX] == 'ee' and posBoard[curY + 1][curX] == 'ee': #empty space
-                        return True
-                    elif posBoard[tarY][tarX][0] == 'b': #attacking a white piece
-                        return True
-            elif tarY - curY <= 1: #within range
-                    if posBoard[tarY][tarX] == 'ee': #empty space
-                        return True
-                    elif posBoard[tarY][tarX][0] == 'b': #attacking a white piece
-                        return True
+                    else:
+                        return False
+    elif pieceType == 'n': #knights
+        if (abs(curY - tarY) == 3 and abs(curX - tarX) == 1) or (abs(curY - tarY) == 1 and abs(curX - tarX) == 3):
+            if posBoard[tarY][tarX][0] == enemyColor:
+                return True:
+    elif pieceType == 'b': #bishops
+    elif pieceType == 'k': #kings
+    elif pieceType == 'q': #queens
+
+    return False
 
 
 def getBoard(row, col):

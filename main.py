@@ -82,10 +82,13 @@ def validMove(piece, targetPos, currentPos):
     elif pieceType == 'n': #knights
         if (abs(curY - tarY) == 3 and abs(curX - tarX) == 1) or (abs(curY - tarY) == 1 and abs(curX - tarX) == 3):
             if posBoard[tarY][tarX][0] == enemyColor:
-                return True:
+                return True
     elif pieceType == 'b': #bishops
+        return False #placeholder
     elif pieceType == 'k': #kings
+        return False #placeholder
     elif pieceType == 'q': #queens
+        return False #placeholder
 
     return False
 
@@ -197,7 +200,7 @@ def main():
 
     # all pieces displayed by this
     for piece in pieceList:
-    	screen.blit(piece.Piece, piece.getPos())
+        screen.blit(piece.Piece, piece.getPos())
 
     ##Fake
     #screen.blit(whitePawn, getBoard(6,0)) #g
@@ -252,7 +255,7 @@ def main():
     
     # define a variable to control the main loop
     running = True
-     
+    
     # main loop
     while running:
         message_display(calcClock(startTime, time.time()), (5,35))
@@ -262,7 +265,18 @@ def main():
         for event in pygame.event.get():
             # detection for clicking on a piece
             if event.type == pygame.MOUSEBUTTONDOWN:
-                mousePos = event.pos
+                x, y = event.pos
+                for piece in pieceList:
+                    pieceRect = piece.Piece.get_rect()
+                    xp, yp = piece.getPos()
+                    pieceRect.x = xp
+                    pieceRect.y = yp
+                    if pieceRect.collidepoint(x, y):
+                        highlightPiece(pieceRect)
+                        pygame.display.update()
+                #if board.get_rect().collidepoint(x, y):
+                #    highlightPiece(board.get_rect())
+                #    pygame.display.update()
                 #do something here
                     # select what piece you clicked on.
                     # if there's a piece selected, then check if it can move to the
@@ -274,6 +288,10 @@ def main():
                 running = False
 
         # check if the smily is still on screen, if not change direction
+
+def highlightPiece(pieceRect):
+    screen.fill((230, 255, 41, 0.5), pieceRect)
+    #pygame.draw.rect(screen, (230, 255, 41, 0.5), pieceRect)
 
 def calcClock(timeStart, currentTime):
     secs = int(currentTime - timeStart)

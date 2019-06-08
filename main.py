@@ -15,6 +15,7 @@ screen = pygame.display.set_mode((screen_width,screen_height))
 startTime = time.time()
 chessBoard = pygame.image.load("assets/board.png")
 moveClickList = []
+pieceClicked = None
 
 #trying something out here
 pieceDict = {} # dict of pieces
@@ -37,64 +38,12 @@ class gamePiece():
         # add more attributes as needed
 
     def movePiece(self, targetPos):
-        #if validMove(targetPos):  # need to iron out required variables/rethink how position is stored
-            self.Pos = targetPos
+        self.Pos = targetPos
+        self.First = False
 
     def getPos(self):
         #r, c = self.Pos
         return getBoard(self.Pos)
-
-
-# DUE TO HOW POSITIONS ARE CURRENTLY STORED, THIS FUNCTION WILL NOT WORK
-# need to rework position storage before implementing this
-def validMove(piece, targetPos, currentPos):
-    curY,curX = currentPos
-    tarY,tarX = targetPos
-    allyColor = piece.Color
-    enemyColor = ''
-    if allyColor == 'b':
-        enemyColor =  'w'
-    else:
-        enemyColor = 'b'
-    if piece.Type == 'p': #pawn
-        if piece.First: #first move
-            if tarY - curY <= 2: #within range
-                if posBoard[tarY][tarX] == 'ee' and posBoard[curY + 1][curX] == 'ee': #empty space
-                    return True
-                elif posBoard[tarY][tarX][0] == enemyColor:
-                    return True
-        elif tarY - curY <= 1: #within range
-                if posBoard[tarY][tarX] == 'ee': #empty space
-                    return True
-                elif posBoard[tarY][tarX][0] == enemyColor:
-                    return True
-    elif pieceType == 'r': #rooks
-        if tarX == curX:
-            for y in range(curY + 1,tarY):
-                if posBoard[y][curX] != 'ee':
-                    if posBoard[y][curX][0] == enemyColor:
-                        return True
-                    else:
-                        return False
-        elif tarY == curY:
-            for x in range(curX + 1,tarX):
-                if posBoard[curY][x] != 'ee':
-                    if posBoard[curY][x][0] == enemyColor:
-                        return True
-                    else:
-                        return False
-    elif pieceType == 'n': #knights
-        if (abs(curY - tarY) == 3 and abs(curX - tarX) == 1) or (abs(curY - tarY) == 1 and abs(curX - tarX) == 3):
-            if posBoard[tarY][tarX][0] == enemyColor:
-                return True
-    elif pieceType == 'b': #bishops
-        return False #placeholder
-    elif pieceType == 'k': #kings
-        return False #placeholder
-    elif pieceType == 'q': #queens
-        return False #placeholder
-
-    return False
 
 #returns a list of the moves the piece can make
 # still need range check
@@ -113,55 +62,35 @@ def moveList(piece):
         if piece.First: #first move
             if allyColor == 'b':
                 if (currRow + 1, currCol) in pieceDict:
-                    if pieceDict[(currRow + 1, currCol)].Color == allyColor:
-                        return list
-                    else:
-                        list.append((currRow + 1, currCol))
-                        return list
+                    return list
                 else:
                     list.append((currRow + 1, currCol))
                 if (currRow + 2, currCol) in pieceDict:
-                    if pieceDict[(currRow + 2, currCol)].Color == allyColor:
-                        return list
-                    else:
-                        list.append((currRow + 2, currCol))
-                        return list
+                    return list
                 else:
                     list.append((currRow + 2, currCol))
             else:
                 if (currRow - 1, currCol) in pieceDict:
-                    if pieceDict[(currRow - 1, currCol)].Color == allyColor:
-                        return list
-                    else:
-                        list.append((currRow - 1, currCol))
-                        return list
+                    return list
                 else:
                     list.append((currRow - 1, currCol))
                 if (currRow - 2, currCol) in pieceDict:
-                    if pieceDict[(currRow - 2, currCol)].Color == allyColor:
-                        return list
-                    else:
-                        list.append((currRow - 2, currCol))
-                        return list
+                    return list
                 else:
                     list.append((currRow - 2, currCol))
         else:
             if allyColor == 'b':
                 if (currRow + 1, currCol) in pieceDict:
-                    if pieceDict[(currRow + 1, currCol)].Color == allyColor:
-                        return list
-                    else:
-                        list.append((currRow + 1, currCol))
+                    return list
                 else:
-                        list.append((currRow + 1, currCol))
+                    list.append((currRow + 1, currCol))
             else:
                 if (currRow - 1, currCol) in pieceDict:
-                    if pieceDict[(currRow - 1, currCol)].Color == allyColor:
-                        return list
-                    else:
-                        list.append((currRow - 1, currCol))
+                    return list
                 else:
-                        list.append((currRow - 1, currCol))
+                    list.append((currRow - 1, currCol))
+        if allyColor == 'b':
+            if (currRow + 1, currCol + 1) in pieceDict:
         return list
     #rook
     elif piece.Type == 'r':
@@ -176,7 +105,7 @@ def moveList(piece):
             else:
                 list.append((currRow, col))
         #left
-        for col in range(0, currCol):
+        for col in range(currCol - 1, -1, -1):
             if (currRow, col) in pieceDict:
                 if pieceDict[(currRow, col)].Color == allyColor:
                     break
@@ -186,7 +115,7 @@ def moveList(piece):
             else:
                 list.append((currRow, col))
         #up
-        for row in range(currRow, -1, -1):
+        for row in range(currRow - 1, -1, -1):
             if (row, currCol) in pieceDict:
                 if pieceDict[(row, currCol)].Color == allyColor:
                     break
@@ -245,7 +174,7 @@ def moveList(piece):
     elif piece.Type == 'b': 
         #up left
         #zip combines the 2 ranges, needed to increment at the same rate
-        for row, col in zip(range(currRow, -1, -1), range(currCol, -1, -1)):
+        for row, col in zip(range(currRow - 1, -1, -1), range(currCol - 1, -1, -1)):
             if col >= 0 and col < 8 and row >= 0 and row < 8:
                 if (row,col) in pieceDict:
                     if pieceDict[(row, col)].Color == allyColor:
@@ -258,7 +187,7 @@ def moveList(piece):
             else:
                 break
         #up right
-        for row, col in zip(range(currRow, -1, -1), range(currCol, 8, 1)):
+        for row, col in zip(range(currRow - 1, -1, -1), range(currCol + 1, 8, 1)):
             if col >= 0 and col < 8 and row >= 0 and row < 8:
                 if (row,col) in pieceDict:
                     if pieceDict[(row, col)].Color == allyColor:
@@ -271,7 +200,7 @@ def moveList(piece):
             else:
                 break
         #down left
-        for row, col in zip(range(currRow, 8, 1), range(currCol, -1, -1)):
+        for row, col in zip(range(currRow + 1, 8, 1), range(currCol - 1, -1, -1)):
             if col >= 0 and col < 8 and row >= 0 and row < 8:
                 if (row,col) in pieceDict:
                     if pieceDict[(row, col)].Color == allyColor:
@@ -284,7 +213,7 @@ def moveList(piece):
             else:
                 break
         #down right
-        for row, col in zip(range(currRow, 8, 1), range(currCol, 8, 1)):
+        for row, col in zip(range(currRow + 1, 8, 1), range(currCol + 1, 8, 1)):
             if col >= 0 and col < 8 and row >= 0 and row < 8:
                 if (row,col) in pieceDict:
                     if pieceDict[(row, col)].Color == allyColor:
@@ -342,7 +271,7 @@ def moveList(piece):
             else:
                 list.append((currRow, col))
         #left
-        for col in range(0, currCol):
+        for col in range(currCol - 1, -1, -1):
             if (currRow, col) in pieceDict:
                 if pieceDict[(currRow, col)].Color == allyColor:
                     break
@@ -352,7 +281,7 @@ def moveList(piece):
             else:
                 list.append((currRow, col))
         #up
-        for row in range(currRow, -1, -1):
+        for row in range(currRow - 1, -1, -1):
             if (row, currCol) in pieceDict:
                 if pieceDict[(row, currCol)].Color == allyColor:
                     break
@@ -374,7 +303,7 @@ def moveList(piece):
         #bishop like check
         #up left
         #zip combines the 2 ranges, needed to increment at the same rate
-        for row, col in zip(range(currRow, -1, -1), range(currCol, -1, -1)):
+        for row, col in zip(range(currRow - 1, -1, -1), range(currCol - 1, -1, -1)):
             if col >= 0 and col < 8 and row >= 0 and row < 8:
                 if (row,col) in pieceDict:
                     if pieceDict[(row, col)].Color == allyColor:
@@ -387,7 +316,7 @@ def moveList(piece):
             else:
                 break
         #up right
-        for row, col in zip(range(currRow, -1, -1), range(currCol, 8, 1)):
+        for row, col in zip(range(currRow - 1, -1, -1), range(currCol + 1, 8, 1)):
             if col >= 0 and col < 8 and row >= 0 and row < 8:
                 if (row,col) in pieceDict:
                     if pieceDict[(row, col)].Color == allyColor:
@@ -400,7 +329,7 @@ def moveList(piece):
             else:
                 break
         #down left
-        for row, col in zip(range(currRow, 8, 1), range(currCol, -1, -1)):
+        for row, col in zip(range(currRow + 1, 8, 1), range(currCol - 1, -1, -1)):
             if col >= 0 and col < 8 and row >= 0 and row < 8:
                 if (row,col) in pieceDict:
                     if pieceDict[(row, col)].Color == allyColor:
@@ -413,7 +342,7 @@ def moveList(piece):
             else:
                 break
         #down right
-        for row, col in zip(range(currRow, 8, 1), range(currCol, 8, 1)):
+        for row, col in zip(range(currRow + 1, 8, 1), range(currCol + 1, 8, 1)):
             if col >= 0 and col < 8 and row >= 0 and row < 8:
                 if (row,col) in pieceDict:
                     if pieceDict[(row, col)].Color == allyColor:
@@ -542,14 +471,22 @@ def main():
                         pieceRect.x = xp
                         pieceRect.y = yp
                         if pieceRect.collidepoint(x, y):
+                            pieceClicked = piece
                             removePastHighlight()
                             highlightPiece(pieceRect)
                             highlightMoves(piece, pieceRect)
                             pygame.display.update()
                 #move detection
-                for move in moveClickList:
-                    if move.collidepoint(x, y):
-                        screen.fill((255,255,255))
+                if pieceClicked != None:
+                    for move, boardPos in moveClickList:
+                        if move.collidepoint(x, y):
+                            del pieceDict[pieceClicked.Pos]
+                            pieceClicked.movePiece(boardPos)
+                            pieceDict[boardPos] = pieceClicked
+                            removePastHighlight()
+                            pieceClicked = None
+                            pygame.display.update()
+                            break
             # only do something if the event is of type QUIT
             elif event.type == pygame.QUIT:
                 # change the value to False, to exit the main loop
@@ -562,9 +499,10 @@ def highlightPiece(pieceRect):
     screen.blit(high, (pieceRect.x,pieceRect.y))
 
 def removePastHighlight():
-    moveClickList = []
+    del moveClickList[0:-1]
     screen.blit(chessBoard, (288,0))
     for _, piece in pieceDict.items():
+        #print(piece.Pos)
         screen.blit(piece.Piece, piece.getPos())
 
 def highlightMoves(piece, pieceRect):
@@ -574,7 +512,7 @@ def highlightMoves(piece, pieceRect):
         high.set_alpha(100)
         high.fill((230, 255, 41)) 
         thing = screen.blit(high, getBoard(place))
-        moveClickList.append(thing)
+        moveClickList.append((thing, place))
 
 def calcClock(timeStart, currentTime):
     secs = int(currentTime - timeStart)

@@ -21,6 +21,8 @@ pieceClicked = None
 aiDepth = None
 userTurn = True
 nothing = None #for doing nothing
+aiCapture = [] #list of pieces captured by ai
+userCapture = [] #list of pieces captured by user
 
 #trying something out here
 pieceDict = {} # dict of pieces
@@ -483,6 +485,7 @@ def main():
     
     # define a variable to control the main loop
     running = True
+    global userTurn
     
     # main loop
     while running:
@@ -512,6 +515,10 @@ def main():
                         if move.collidepoint(x, y):
                             del pieceDict[pieceClicked.Pos]
                             pieceClicked.movePiece(boardPos)
+                            #attack check
+                            if boardPos in pieceDict:
+                                userCapture.append(pieceDict[boardPos].Piece)
+                                updateCapture(True)
                             pieceDict[boardPos] = pieceClicked
                             removePastHighlight()
                             pieceClicked = None
@@ -540,6 +547,24 @@ def deepBlue(depth, pieceLocations, moveValue):
             mimicBoard[move] = piece
             deepBlue(depth - 1, mimicBoard, moveValue)
 
+def updateCapture(user):
+    if user:
+        #update user
+        for i in range(0,len(userCapture)):
+            if i < 5:
+                screen.blit(userCapture[i], (805 + i * 50, 35))
+            elif i < 10:
+                screen.blit(userCapture[i], (805 + (i - 5) * 50, 85))
+            elif i < 15:
+                screen.blit(userCapture[i], (805 + (i - 10) * 50, 135))
+    else:
+        #update AI
+        if i < 5:
+            screen.blit(userCapture[i], (805 + i * 50, 291))
+        elif i < 10:
+            screen.blit(userCapture[i], (805 + (i - 5) * 50, 341))
+        elif i < 15:
+            screen.blit(userCapture[i], (805 + (i - 10) * 50, 391))
 
 def highlightPiece(pieceRect):
     high = pygame.Surface(pieceRect.size)

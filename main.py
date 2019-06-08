@@ -562,6 +562,7 @@ def deepBlue(depth, pieceLocations, teamColor, moveValue):
         if piece.Color == teamColor:
             list.append(piece)
     for piece in list:
+        print(piece.Type + " " + piece.Color)
         moves = moveList(piece)
         for move in moves:
             oldPos = piece.Pos
@@ -580,9 +581,7 @@ def deepBlue(depth, pieceLocations, teamColor, moveValue):
             else:
                 if potentialValue > bestValue:
                     bestValue = potentialValue
-                    bestMove = potentialMove
-                    bestPiece = piece.Pos
-        if bestMove == (0,0) and bestPiece == (0,0) and len(moves) > 0:
+        if bestMove == (0,0) and bestPiece == (0,0) and len(moves) > 0 and teamColor == 'b':
             bestPiece = piece.Pos
             bestMove = moves[0]
     return (bestValue, bestMove, bestPiece)

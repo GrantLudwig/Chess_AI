@@ -20,6 +20,7 @@ moveClickList = []
 pieceClicked = None
 aiDepth = None
 userTurn = True
+nothing = None #for doing nothing
 
 #trying something out here
 pieceDict = {} # dict of pieces
@@ -67,35 +68,58 @@ def moveList(piece):
         if piece.First: #first move
             if allyColor == 'b':
                 if (currRow + 1, currCol) in pieceDict:
-                    return list
+                    nothing = None
                 else:
                     list.append((currRow + 1, currCol))
                 if (currRow + 2, currCol) in pieceDict:
-                    return list
+                    nothing = None
                 else:
                     list.append((currRow + 2, currCol))
             else:
                 if (currRow - 1, currCol) in pieceDict:
-                    return list
+                    nothing = None
                 else:
                     list.append((currRow - 1, currCol))
                 if (currRow - 2, currCol) in pieceDict:
-                    return list
+                    nothing = None
                 else:
                     list.append((currRow - 2, currCol))
         else:
             if allyColor == 'b':
-                if (currRow + 1, currCol) in pieceDict:
-                    return list
-                else:
-                    list.append((currRow + 1, currCol))
+                if currRow + 1 >= 0 and currRow + 1 < 8:
+                    if (currRow + 1, currCol) in pieceDict:
+                        nothing = None
+                    else:
+                        list.append((currRow + 1, currCol))
             else:
-                if (currRow - 1, currCol) in pieceDict:
-                    return list
-                else:
-                    list.append((currRow - 1, currCol))
+                if currRow - 1 >= 0 and currRow - 1 < 8:
+                    if (currRow - 1, currCol) in pieceDict:
+                        nothing = None
+                    else:
+                        list.append((currRow - 1, currCol))
+        #attack
         if allyColor == 'b':
-            if (currRow + 1, currCol + 1) in pieceDict:
+            #right
+            if currCol + 1 >= 0 and currCol + 1 < 8 and currRow + 1 >= 0 and currRow + 1 < 8:
+                if (currRow + 1, currCol + 1) in pieceDict:
+                    if pieceDict[(currRow + 1, currCol + 1)].Color != allyColor:
+                        list.append((currRow + 1, currCol + 1))
+            #left
+            if currCol - 1 >= 0 and currCol - 1 < 8 and currRow + 1 >= 0 and currRow + 1 < 8:
+                if (currRow + 1, currCol - 1) in pieceDict:
+                    if pieceDict[(currRow + 1, currCol - 1)].Color != allyColor:
+                        list.append((currRow + 1, currCol - 1))
+        else:
+            #right
+            if currCol - 1 >= 0 and currCol - 1 < 8 and currRow + 1 >= 0 and currRow + 1 < 8:
+                if (currRow - 1, currCol + 1) in pieceDict:
+                    if pieceDict[(currRow - 1, currCol + 1)].Color != allyColor:
+                        list.append((currRow - 1, currCol + 1))
+            #left
+            if currCol - 1 >= 0 and currCol - 1 < 8 and currRow - 1 >= 0 and currRow - 1 < 8:
+                if (currRow - 1, currCol - 1) in pieceDict:
+                    if pieceDict[(currRow - 1, currCol - 1)].Color != allyColor:
+                        list.append((currRow - 1, currCol - 1))
         return list
     #rook
     elif piece.Type == 'r':

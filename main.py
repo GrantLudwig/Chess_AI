@@ -163,7 +163,7 @@ def moveList(piece):
                         list.append((currRow - 1, currCol))
         return list
     #rook
-    elif pieceType == 'r':
+    elif piece.Type == 'r':
         #right
         for col in range(currCol + 1, 8):
             if (currRow, col) in pieceDict:
@@ -185,7 +185,7 @@ def moveList(piece):
             else:
                 list.append((currRow, col))
         #up
-        for row in range(0, rowCurr):
+        for row in range(currRow, -1, -1):
             if (row, currCol) in pieceDict:
                 if pieceDict[(row, currCol)].Color == allyColor:
                     break
@@ -195,7 +195,7 @@ def moveList(piece):
             else:
                 list.append((row, currCol))
         #down
-        for row in range(rowCurr + 1, 8):
+        for row in range(currRow + 1, 8):
             if (row, currCol) in pieceDict:
                 if pieceDict[(row, currCol)].Color == allyColor:
                     break
@@ -206,46 +206,46 @@ def moveList(piece):
                 list.append((row, currCol))
         return list
     #knights
-    elif pieceType == 'n':
+    elif piece.Type == 'n':
         #down 2, left 1
         row = currRow + 2
         col = currCol - 1
-        knightCheck(row, col, list)
+        knightCheck(row, col, list, allyColor)
         #down 2, right 1
         row = currRow + 2
         col = currCol + 1
-        knightCheck(row, col, list)
+        knightCheck(row, col, list, allyColor)
         #down 1, left 2
         row = currRow + 1
         col = currCol - 2
-        knightCheck(row, col, list)
+        knightCheck(row, col, list, allyColor)
         #down 1, right 2
         row = currRow + 1
         col = currCol + 2
-        knightCheck(row, col, list)
+        knightCheck(row, col, list, allyColor)
         #up 1, left 2
         row = currRow - 1
         col = currCol - 2
-        knightCheck(row, col, list)
+        knightCheck(row, col, list, allyColor)
         #up 1, right 2
         row = currRow - 1
         col = currCol + 2
-        knightCheck(row, col, list)
+        knightCheck(row, col, list, allyColor)
         #up 2, left 1
         row = currRow - 2
         col = currCol - 1
-        knightCheck(row, col, list)
+        knightCheck(row, col, list, allyColor)
         #up 2, right 1
         row = currRow - 2
         col = currCol + 1
-        knightCheck(row, col, list)
+        knightCheck(row, col, list, allyColor)
         return list
     #bishops
-    elif pieceType == 'b': 
+    elif piece.Type == 'b': 
         #up left
         #zip combines the 2 ranges, needed to increment at the same rate
         for row, col in zip(range(currRow, -1, -1), range(currCol, -1, -1)):
-            if col >= 0 and col < 8 and row >= 0 and col < 8:
+            if col >= 0 and col < 8 and row >= 0 and row < 8:
                 if (row,col) in pieceDict:
                     if pieceDict[(row, col)].Color == allyColor:
                         break
@@ -258,7 +258,7 @@ def moveList(piece):
                 break
         #up right
         for row, col in zip(range(currRow, -1, -1), range(currCol, 8, 1)):
-            if col >= 0 and col < 8 and row >= 0 and col < 8:
+            if col >= 0 and col < 8 and row >= 0 and row < 8:
                 if (row,col) in pieceDict:
                     if pieceDict[(row, col)].Color == allyColor:
                         break
@@ -271,7 +271,7 @@ def moveList(piece):
                 break
         #down left
         for row, col in zip(range(currRow, 8, 1), range(currCol, -1, -1)):
-            if col >= 0 and col < 8 and row >= 0 and col < 8:
+            if col >= 0 and col < 8 and row >= 0 and row < 8:
                 if (row,col) in pieceDict:
                     if pieceDict[(row, col)].Color == allyColor:
                         break
@@ -284,7 +284,7 @@ def moveList(piece):
                 break
         #down right
         for row, col in zip(range(currRow, 8, 1), range(currCol, 8, 1)):
-            if col >= 0 and col < 8 and row >= 0 and col < 8:
+            if col >= 0 and col < 8 and row >= 0 and row < 8:
                 if (row,col) in pieceDict:
                     if pieceDict[(row, col)].Color == allyColor:
                         break
@@ -297,35 +297,35 @@ def moveList(piece):
                 break
         return list
     #kings
-    elif pieceType == 'k': 
+    elif piece.Type == 'k': 
         #down
         row = currRow + 1
-        kingCheck(row, currCol, list)
+        kingCheck(row, currCol, list, allyColor)
         #up
         row = currRow - 1
-        kingCheck(row, currCol, list)
+        kingCheck(row, currCol, list, allyColor)
         #left
         col = currCol - 1
-        kingCheck(currRow, col, list)
+        kingCheck(currRow, col, list, allyColor)
         #right
         col = currCol + 1
-        kingCheck(currRow, col, list)
+        kingCheck(currRow, col, list, allyColor)
         #down left
         row = currRow + 1
         col = currCol - 1
-        kingCheck(row, col, list)
+        kingCheck(row, col, list, allyColor)
         #down right
         row = currRow + 1
         col = currCol + 1
-        kingCheck(row, col, list)
+        kingCheck(row, col, list, allyColor)
         #up left
         row = currRow - 1
         col = currCol - 1
-        kingCheck(row, col, list)
+        kingCheck(row, col, list, allyColor)
         #up right
         row = currRow - 1
         col = currCol + 1
-        kingCheck(row, col, list)
+        kingCheck(row, col, list, allyColor)
         return list 
     #queens
     else:
@@ -351,7 +351,7 @@ def moveList(piece):
             else:
                 list.append((currRow, col))
         #up
-        for row in range(0, rowCurr):
+        for row in range(currRow, -1, -1):
             if (row, currCol) in pieceDict:
                 if pieceDict[(row, currCol)].Color == allyColor:
                     break
@@ -361,7 +361,7 @@ def moveList(piece):
             else:
                 list.append((row, currCol))
         #down
-        for row in range(rowCurr + 1, 8):
+        for row in range(currRow + 1, 8):
             if (row, currCol) in pieceDict:
                 if pieceDict[(row, currCol)].Color == allyColor:
                     break
@@ -374,7 +374,7 @@ def moveList(piece):
         #up left
         #zip combines the 2 ranges, needed to increment at the same rate
         for row, col in zip(range(currRow, -1, -1), range(currCol, -1, -1)):
-            if col >= 0 and col < 8 and row >= 0 and col < 8:
+            if col >= 0 and col < 8 and row >= 0 and row < 8:
                 if (row,col) in pieceDict:
                     if pieceDict[(row, col)].Color == allyColor:
                         break
@@ -387,7 +387,7 @@ def moveList(piece):
                 break
         #up right
         for row, col in zip(range(currRow, -1, -1), range(currCol, 8, 1)):
-            if col >= 0 and col < 8 and row >= 0 and col < 8:
+            if col >= 0 and col < 8 and row >= 0 and row < 8:
                 if (row,col) in pieceDict:
                     if pieceDict[(row, col)].Color == allyColor:
                         break
@@ -400,7 +400,7 @@ def moveList(piece):
                 break
         #down left
         for row, col in zip(range(currRow, 8, 1), range(currCol, -1, -1)):
-            if col >= 0 and col < 8 and row >= 0 and col < 8:
+            if col >= 0 and col < 8 and row >= 0 and row < 8:
                 if (row,col) in pieceDict:
                     if pieceDict[(row, col)].Color == allyColor:
                         break
@@ -413,7 +413,7 @@ def moveList(piece):
                 break
         #down right
         for row, col in zip(range(currRow, 8, 1), range(currCol, 8, 1)):
-            if col >= 0 and col < 8 and row >= 0 and col < 8:
+            if col >= 0 and col < 8 and row >= 0 and row < 8:
                 if (row,col) in pieceDict:
                     if pieceDict[(row, col)].Color == allyColor:
                         break
@@ -427,8 +427,8 @@ def moveList(piece):
         return list 
 
 #generalized knight checking
-def knightCheck(row, col, list):
-    if col >= 0 and col < 8 and row >= 0 and col < 8:
+def knightCheck(row, col, list, allyColor):
+    if col >= 0 and col < 8 and row >= 0 and row < 8:
         if (row,col) in pieceDict:
             if pieceDict[(row, col)].Color != allyColor:
                 list.append((row, col))
@@ -436,8 +436,8 @@ def knightCheck(row, col, list):
             list.append((row, col))
 
 #generalized king checking
-def kingCheck(row, col, list):
-    if col >= 0 and col < 8 and row >= 0 and col < 8:
+def kingCheck(row, col, list, allyColor):
+    if col >= 0 and col < 8 and row >= 0 and row < 8:
         if (row,col) in pieceDict:
             if pieceDict[(row, col)].Color != allyColor:
                 list.append((row, col))
@@ -543,6 +543,7 @@ def main():
                         if pieceRect.collidepoint(x, y):
                             removePastHighlight()
                             highlightPiece(pieceRect)
+                            highlightMoves(piece, pieceRect)
                             pygame.display.update()
                 #if board.get_rect().collidepoint(x, y):
                 #    highlightPiece(board.get_rect())
@@ -569,6 +570,14 @@ def removePastHighlight():
     screen.blit(chessBoard, (288,0))
     for _, piece in pieceDict.items():
         screen.blit(piece.Piece, piece.getPos())
+
+def highlightMoves(piece, pieceRect):
+    list = moveList(piece)
+    high = pygame.Surface(pieceRect.size)
+    high.set_alpha(100)
+    high.fill((230, 255, 41)) 
+    for place in list:
+        screen.blit(high, getBoard(place))
 
 def calcClock(timeStart, currentTime):
     secs = int(currentTime - timeStart)

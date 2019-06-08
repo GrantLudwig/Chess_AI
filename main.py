@@ -16,8 +16,6 @@ startTime = time.time()
 chessBoard = pygame.image.load("assets/board.png")
 
 #trying something out here
-pieceList = [] # list of all pieces, for purposes of display...i think?
-posBoard = [['ee' for x in range(8)] for y in range(8)] 
 pieceDict = {} # dict of pieces
                 #key: (row,col) board
                 #value: gamePiece
@@ -108,20 +106,343 @@ def moveList(piece):
         enemyColor =  'w'
     else:
         enemyColor = 'b'
-    if piece.Type == 'p': #pawn
+    #pawn
+    #need bounds checking
+    if piece.Type == 'p': 
         if piece.First: #first move
-            if allyColor == 'w':
-                list.append((currRow, currCol + 1))
-                list.append((currRow, currCol + 2))
+            if allyColor == 'b':
+                if (currRow + 1, currCol) in pieceDict:
+                    if pieceDict[(currRow + 1, currCol)].Color == allyColor:
+                        return list
+                    else:
+                        list.append((currRow + 1, currCol))
+                        return list
+                else:
+                    list.append((currRow + 1, currCol))
+                if (currRow + 2, currCol) in pieceDict:
+                    if pieceDict[(currRow + 2, currCol)].Color == allyColor:
+                        return list
+                    else:
+                        list.append((currRow + 2, currCol))
+                        return list
+                else:
+                    list.append((currRow + 2, currCol))
             else:
-                list.append((currRow, currCol - 1))
-                list.append((currRow, currCol - 2))
+                if (currRow - 1, currCol) in pieceDict:
+                    if pieceDict[(currRow - 1, currCol)].Color == allyColor:
+                        return list
+                    else:
+                        list.append((currRow - 1, currCol))
+                        return list
+                else:
+                    list.append((currRow - 1, currCol))
+                if (currRow - 2, currCol) in pieceDict:
+                    if pieceDict[(currRow - 2, currCol)].Color == allyColor:
+                        return list
+                    else:
+                        list.append((currRow - 2, currCol))
+                        return list
+                else:
+                    list.append((currRow - 2, currCol))
         else:
-            if allyColor == 'w':
-                list.append((currRow, currCol + 1))
+            if allyColor == 'b':
+                if (currRow + 1, currCol) in pieceDict:
+                    if pieceDict[(currRow + 1, currCol)].Color == allyColor:
+                        return list
+                    else:
+                        list.append((currRow + 1, currCol))
+                else:
+                        list.append((currRow + 1, currCol))
             else:
-                list.append((currRow, currCol - 1))
+                if (currRow - 1, currCol) in pieceDict:
+                    if pieceDict[(currRow - 1, currCol)].Color == allyColor:
+                        return list
+                    else:
+                        list.append((currRow - 1, currCol))
+                else:
+                        list.append((currRow - 1, currCol))
+        return list
+    #rook
+    elif pieceType == 'r':
+        #right
+        for col in range(currCol + 1, 8):
+            if (currRow, col) in pieceDict:
+                if pieceDict[(currRow, col)].Color == allyColor:
+                    break
+                else:
+                    list.append((currRow, col))
+                    break
+            else:
+                list.append((currRow, col))
+        #left
+        for col in range(0, currCol):
+            if (currRow, col) in pieceDict:
+                if pieceDict[(currRow, col)].Color == allyColor:
+                    break
+                elif pieceDict[(currRow, col)].Color != allyColor:
+                    list.append((currRow, col))
+                    break
+            else:
+                list.append((currRow, col))
+        #up
+        for row in range(0, rowCurr):
+            if (row, currCol) in pieceDict:
+                if pieceDict[(row, currCol)].Color == allyColor:
+                    break
+                elif pieceDict[(row, currCol)].Color != allyColor:
+                    list.append((row, currCol))
+                    break
+            else:
+                list.append((row, currCol))
+        #down
+        for row in range(rowCurr + 1, 8):
+            if (row, currCol) in pieceDict:
+                if pieceDict[(row, currCol)].Color == allyColor:
+                    break
+                elif pieceDict[(row, currCol)].Color != allyColor:
+                    list.append((row, currCol))
+                    break
+            else:
+                list.append((row, currCol))
+        return list
+    #knights
+    elif pieceType == 'n':
+        #down 2, left 1
+        row = currRow + 2
+        col = currCol - 1
+        knightCheck(row, col, list)
+        #down 2, right 1
+        row = currRow + 2
+        col = currCol + 1
+        knightCheck(row, col, list)
+        #down 1, left 2
+        row = currRow + 1
+        col = currCol - 2
+        knightCheck(row, col, list)
+        #down 1, right 2
+        row = currRow + 1
+        col = currCol + 2
+        knightCheck(row, col, list)
+        #up 1, left 2
+        row = currRow - 1
+        col = currCol - 2
+        knightCheck(row, col, list)
+        #up 1, right 2
+        row = currRow - 1
+        col = currCol + 2
+        knightCheck(row, col, list)
+        #up 2, left 1
+        row = currRow - 2
+        col = currCol - 1
+        knightCheck(row, col, list)
+        #up 2, right 1
+        row = currRow - 2
+        col = currCol + 1
+        knightCheck(row, col, list)
+        return list
+    #bishops
+    elif pieceType == 'b': 
+        #up left
+        #zip combines the 2 ranges, needed to increment at the same rate
+        for row, col in zip(range(currRow, -1, -1), range(currCol, -1, -1)):
+            if col >= 0 and col < 8 and row >= 0 and col < 8:
+                if (row,col) in pieceDict:
+                    if pieceDict[(row, col)].Color == allyColor:
+                        break
+                    else:
+                        list.append((row, col))
+                        break
+                else:
+                    list.append((row, col))
+            else:
+                break
+        #up right
+        for row, col in zip(range(currRow, -1, -1), range(currCol, 8, 1)):
+            if col >= 0 and col < 8 and row >= 0 and col < 8:
+                if (row,col) in pieceDict:
+                    if pieceDict[(row, col)].Color == allyColor:
+                        break
+                    else:
+                        list.append((row, col))
+                        break
+                else:
+                    list.append((row, col))
+            else:
+                break
+        #down left
+        for row, col in zip(range(currRow, 8, 1), range(currCol, -1, -1)):
+            if col >= 0 and col < 8 and row >= 0 and col < 8:
+                if (row,col) in pieceDict:
+                    if pieceDict[(row, col)].Color == allyColor:
+                        break
+                    else:
+                        list.append((row, col))
+                        break
+                else:
+                    list.append((row, col))
+            else:
+                break
+        #down right
+        for row, col in zip(range(currRow, 8, 1), range(currCol, 8, 1)):
+            if col >= 0 and col < 8 and row >= 0 and col < 8:
+                if (row,col) in pieceDict:
+                    if pieceDict[(row, col)].Color == allyColor:
+                        break
+                    else:
+                        list.append((row, col))
+                        break
+                else:
+                    list.append((row, col))
+            else:
+                break
+        return list
+    #kings
+    elif pieceType == 'k': 
+        #down
+        row = currRow + 1
+        kingCheck(row, currCol, list)
+        #up
+        row = currRow - 1
+        kingCheck(row, currCol, list)
+        #left
+        col = currCol - 1
+        kingCheck(currRow, col, list)
+        #right
+        col = currCol + 1
+        kingCheck(currRow, col, list)
+        #down left
+        row = currRow + 1
+        col = currCol - 1
+        kingCheck(row, col, list)
+        #down right
+        row = currRow + 1
+        col = currCol + 1
+        kingCheck(row, col, list)
+        #up left
+        row = currRow - 1
+        col = currCol - 1
+        kingCheck(row, col, list)
+        #up right
+        row = currRow - 1
+        col = currCol + 1
+        kingCheck(row, col, list)
+        return list 
+    #queens
+    else:
+        #rook like check
+        #right
+        for col in range(currCol + 1, 8):
+            if (currRow, col) in pieceDict:
+                if pieceDict[(currRow, col)].Color == allyColor:
+                    break
+                else:
+                    list.append((currRow, col))
+                    break
+            else:
+                list.append((currRow, col))
+        #left
+        for col in range(0, currCol):
+            if (currRow, col) in pieceDict:
+                if pieceDict[(currRow, col)].Color == allyColor:
+                    break
+                elif pieceDict[(currRow, col)].Color != allyColor:
+                    list.append((currRow, col))
+                    break
+            else:
+                list.append((currRow, col))
+        #up
+        for row in range(0, rowCurr):
+            if (row, currCol) in pieceDict:
+                if pieceDict[(row, currCol)].Color == allyColor:
+                    break
+                elif pieceDict[(row, currCol)].Color != allyColor:
+                    list.append((row, currCol))
+                    break
+            else:
+                list.append((row, currCol))
+        #down
+        for row in range(rowCurr + 1, 8):
+            if (row, currCol) in pieceDict:
+                if pieceDict[(row, currCol)].Color == allyColor:
+                    break
+                elif pieceDict[(row, currCol)].Color != allyColor:
+                    list.append((row, currCol))
+                    break
+            else:
+                list.append((row, currCol))
+        #bishop like check
+        #up left
+        #zip combines the 2 ranges, needed to increment at the same rate
+        for row, col in zip(range(currRow, -1, -1), range(currCol, -1, -1)):
+            if col >= 0 and col < 8 and row >= 0 and col < 8:
+                if (row,col) in pieceDict:
+                    if pieceDict[(row, col)].Color == allyColor:
+                        break
+                    else:
+                        list.append((row, col))
+                        break
+                else:
+                    list.append((row, col))
+            else:
+                break
+        #up right
+        for row, col in zip(range(currRow, -1, -1), range(currCol, 8, 1)):
+            if col >= 0 and col < 8 and row >= 0 and col < 8:
+                if (row,col) in pieceDict:
+                    if pieceDict[(row, col)].Color == allyColor:
+                        break
+                    else:
+                        list.append((row, col))
+                        break
+                else:
+                    list.append((row, col))
+            else:
+                break
+        #down left
+        for row, col in zip(range(currRow, 8, 1), range(currCol, -1, -1)):
+            if col >= 0 and col < 8 and row >= 0 and col < 8:
+                if (row,col) in pieceDict:
+                    if pieceDict[(row, col)].Color == allyColor:
+                        break
+                    else:
+                        list.append((row, col))
+                        break
+                else:
+                    list.append((row, col))
+            else:
+                break
+        #down right
+        for row, col in zip(range(currRow, 8, 1), range(currCol, 8, 1)):
+            if col >= 0 and col < 8 and row >= 0 and col < 8:
+                if (row,col) in pieceDict:
+                    if pieceDict[(row, col)].Color == allyColor:
+                        break
+                    else:
+                        list.append((row, col))
+                        break
+                else:
+                    list.append((row, col))
+            else:
+                break
+        return list 
 
+#generalized knight checking
+def knightCheck(row, col, list):
+    if col >= 0 and col < 8 and row >= 0 and col < 8:
+        if (row,col) in pieceDict:
+            if pieceDict[(row, col)].Color != allyColor:
+                list.append((row, col))
+        else:
+            list.append((row, col))
+
+#generalized king checking
+def kingCheck(row, col, list):
+    if col >= 0 and col < 8 and row >= 0 and col < 8:
+        if (row,col) in pieceDict:
+            if pieceDict[(row, col)].Color != allyColor:
+                list.append((row, col))
+        else:
+            list.append((row, col))
 
 #def getBoard(row, col):
 #   return board[(row,col)]
@@ -158,120 +479,35 @@ def main():
     # thinking of making a list for game pieces?
     # maybe just loop through em
 
-    #Real
-    #Pawns
-    #for pawnI in range(8):
-    #    screen.blit(whitePawn, getBoard(6,pawnI))
-    #    screen.blit(blackPawn, getBoard(1,pawnI))
-    #Rooks
-    #screen.blit(whiteRook, getBoard(7,0))
-    #screen.blit(whiteRook, getBoard(7,7))
-    #screen.blit(blackKnight, getBoard(0,0))
-    #screen.blit(blackKnight, getBoard(0,7))
-    #Knights
-    #screen.blit(whiteKnight, getBoard(7,1))
-    #screen.blit(whiteKnight, getBoard(7,6))
-    #screen.blit(blackRook, getBoard(0,1))
-    #screen.blit(blackRook, getBoard(0,6))
-    #Bishops
-    #screen.blit(whiteBishop, getBoard(7,2))
-    #screen.blit(whiteBishop, getBoard(7,5))
-    #screen.blit(blackBishop, getBoard(0,2))
-    #screen.blit(blackBishop, getBoard(0,5))
-    #Queens
-    #screen.blit(whiteQueen, getBoard(7,3))
-    #screen.blit(blackQueen, getBoard(0,3))
-    #Kings
-    #screen.blit(whiteKing, getBoard(7,4))
-    #screen.blit(blackKing, getBoard(0,4))
-    #hi
-
-    # generalized piece initialization
+    #builds the pieceDict
     for pawnI in range(8):
-        pieceList.append(gamePiece(whitePawn, 'p', (6,pawnI), 'w'))
-        posBoard[6][pawnI] = 'wp'
-        pieceList.append(gamePiece(blackPawn, 'p', (1,pawnI), 'b'))
-        posBoard[1][pawnI] = 'bp'
+        pieceDict[(6,pawnI)] = gamePiece(whitePawn, 'p', (6,pawnI), 'w')
+        pieceDict[(1,pawnI)] = gamePiece(blackPawn, 'p', (1,pawnI), 'b')
     #Rooks
-    pieceList.append(gamePiece(whiteRook, 'r', (7,0), 'w'))
-    pieceList.append(gamePiece(whiteRook, 'r', (7,7), 'w'))
-    posBoard[7][0] = 'wr'
-    posBoard[7][7] = 'wr'
-    pieceList.append(gamePiece(blackRook, 'r', (0,0), 'b'))
-    pieceList.append(gamePiece(blackRook, 'r', (0,7), 'b'))
-    posBoard[0][0] = 'br'
-    posBoard[0][7] = 'br'
+    pieceDict[(7,0)] = gamePiece(whiteRook, 'r', (7,0), 'w')
+    pieceDict[(7,7)] = gamePiece(whiteRook, 'r', (7,7), 'w')
+    pieceDict[(0,0)] = gamePiece(blackRook, 'r', (0,0), 'b')
+    pieceDict[(0,7)] = gamePiece(blackRook, 'r', (0,7), 'b')
     #Knights
-    pieceList.append(gamePiece(whiteKnight, 'n', (7,1), 'w'))
-    pieceList.append(gamePiece(whiteKnight, 'n', (7,6), 'w'))
-    posBoard[7][1] = 'wn'
-    posBoard[7][6] = 'wn'
-    pieceList.append(gamePiece(blackKnight, 'n', (0,1), 'b'))
-    pieceList.append(gamePiece(blackKnight, 'n', (0,6), 'b'))
-    posBoard[0][1] = 'bn'
-    posBoard[0][6] = 'bn'
+    pieceDict[(7,1)] = gamePiece(whiteKnight, 'n', (7,1), 'w')
+    pieceDict[(7,6)] = gamePiece(whiteKnight, 'n', (7,6), 'w')
+    pieceDict[(0,1)] = gamePiece(blackKnight, 'n', (0,1), 'b')
+    pieceDict[(0,6)] = gamePiece(blackKnight, 'n', (0,6), 'b')
     #Bishops
-    pieceList.append(gamePiece(whiteBishop, 'b', (7,2), 'w'))
-    pieceList.append(gamePiece(whiteBishop, 'b', (7,5), 'w'))
-    posBoard[7][2] = 'wb'
-    posBoard[7][5] = 'wb'
-    pieceList.append(gamePiece(blackBishop, 'b', (0,2), 'b'))
-    pieceList.append(gamePiece(blackBishop, 'b', (0,5), 'b'))
-    posBoard[0][2] = 'bb'
-    posBoard[0][5] = 'bb'
+    pieceDict[(7,2)] = gamePiece(whiteBishop, 'b', (7,2), 'w')
+    pieceDict[(7,5)] = gamePiece(whiteBishop, 'b', (7,5), 'w')
+    pieceDict[(0,2)] = gamePiece(blackBishop, 'b', (0,2), 'b')
+    pieceDict[(0,5)] = gamePiece(blackBishop, 'b', (0,5), 'b')
     #Queens
-    pieceList.append(gamePiece(whiteQueen, 'q', (7,3), 'w'))
-    pieceList.append(gamePiece(blackQueen, 'q', (0,3), 'b'))
-    posBoard[7][3] = 'wq'
-    posBoard[0][3] = 'bq'
+    pieceDict[(7,3)] = gamePiece(whiteQueen, 'q', (7,3), 'w')
+    pieceDict[(0,3)] = gamePiece(blackQueen, 'q', (0,3), 'b')
     #Kings
-    pieceList.append(gamePiece(whiteKing, 'k', (7,4), 'w'))
-    pieceList.append(gamePiece(blackKing, 'k', (0,4), 'b'))
-    posBoard[7][4] = 'wk'
-    posBoard[0][4] = 'bk'
+    pieceDict[(7,4)] = gamePiece(whiteKing, 'k', (7,4), 'w')
+    pieceDict[(0,4)] = gamePiece(blackKing, 'k', (0,4), 'b')
 
     # all pieces displayed by this
-    for piece in pieceList:
+    for _, piece in pieceDict.items():
         screen.blit(piece.Piece, piece.getPos())
-
-    ##Fake
-    #screen.blit(whitePawn, getBoard(6,0)) #g
-    #screen.blit(whitePawn, getBoard(3,1)) #g
-    #screen.blit(whitePawn, getBoard(6,2)) #g
-    #screen.blit(whitePawn, getBoard(5,3)) #g
-    #screen.blit(whitePawn, getBoard(3,4)) #g
-    #screen.blit(whitePawn, (805, 35)) #g
-    #screen.blit(whitePawn, getBoard(6,6)) #g
-    #screen.blit(whitePawn, getBoard(6,7)) #g
-    #screen.blit(blackPawn, getBoard(1,0)) #g
-    #screen.blit(blackPawn, getBoard(1,1)) #g
-    #screen.blit(blackPawn, getBoard(3,2)) #g
-    #screen.blit(blackPawn, getBoard(2,3)) #g
-    #screen.blit(blackPawn, getBoard(1,4)) #g
-    #screen.blit(blackPawn, getBoard(1,5)) #g
-    #screen.blit(blackPawn, getBoard(2,6)) #g
-    #screen.blit(blackPawn, getBoard(3,7)) #g
-    ##Rooks
-    #screen.blit(whiteRook, getBoard(7,0)) #g
-    #screen.blit(whiteRook, getBoard(7,7)) #g
-    #screen.blit(blackKnight, getBoard(0,0)) #g
-    #screen.blit(blackKnight, getBoard(0,7)) #g
-    ##Knights
-    #screen.blit(whiteKnight, (855, 35)) #g
-    #screen.blit(whiteKnight, getBoard(7,6)) #g
-    #screen.blit(blackRook, (805, 291)) #g
-    #screen.blit(blackRook, getBoard(0,6)) #g
-    ##Bishops
-    #screen.blit(whiteBishop, getBoard(7,2)) #g
-    #screen.blit(whiteBishop, getBoard(7,5)) #g
-    #screen.blit(blackBishop, getBoard(1,3)) #g
-    #screen.blit(blackBishop, getBoard(2,7)) #g
-    ##Queens
-    #screen.blit(whiteQueen, getBoard(7,3)) #g
-    #screen.blit(blackQueen, getBoard(5,2)) #g
-    ##Kings
-    #screen.blit(whiteKing, getBoard(7,4)) #g
-    #screen.blit(blackKing, getBoard(0,4)) #g
 
     #Text
     message_display('Game Time:', (5,0))
@@ -298,14 +534,14 @@ def main():
             # detection for clicking on a piece
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
-                for piece in pieceList:
+                for _, piece in pieceDict.items():
                     if piece.Color == 'w':
                         pieceRect = piece.Piece.get_rect()
                         xp, yp = piece.getPos()
                         pieceRect.x = xp
                         pieceRect.y = yp
                         if pieceRect.collidepoint(x, y):
-                            removePastHighlight(pieceList)
+                            removePastHighlight()
                             highlightPiece(pieceRect)
                             pygame.display.update()
                 #if board.get_rect().collidepoint(x, y):
@@ -329,9 +565,9 @@ def highlightPiece(pieceRect):
     high.fill((230, 255, 41)) 
     screen.blit(high, (pieceRect.x,pieceRect.y))
 
-def removePastHighlight(pieceList):
+def removePastHighlight():
     screen.blit(chessBoard, (288,0))
-    for piece in pieceList:
+    for _, piece in pieceDict.items():
         screen.blit(piece.Piece, piece.getPos())
 
 def calcClock(timeStart, currentTime):

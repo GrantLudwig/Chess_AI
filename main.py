@@ -488,11 +488,8 @@ def main():
     # define a variable to control the main loop
     running = True
     global userTurn
-<<<<<<< HEAD
     useless = 0
-=======
-    
->>>>>>> e3530e4732dc5bfa75bf4e1f7e4d79f4957ef096
+
     # main loop
     while running:
         message_display(calcClock(startTime, time.time()), (5,35))
@@ -523,7 +520,7 @@ def main():
                             pieceClicked.movePiece(boardPos)
                             #attack check
                             if boardPos in pieceDict:
-                                userCapture.append(pieceDict[boardPos].Piece)
+                                userCapture.append(pieceDict[boardPos].getPiece())
                                 updateCapture(True)
                             pieceDict[boardPos] = pieceClicked
                             removePastHighlight()
@@ -532,9 +529,9 @@ def main():
                             userTurn = False
                             useless, targetMove, targetPiece = deepBlue(aiDepth,pieceDict, 'b', 0)
                             aiPiece = pieceDict[targetPiece]
+                            del pieceDict[targetPiece]
                             aiPiece.movePiece(targetMove)
                             pieceDict[targetMove] = aiPiece
-                            del pieceDict[targetPiece]
                             screen.blit(chessBoard, (288,0))
                             displayPieces()
                             pygame.display.update()

@@ -525,6 +525,7 @@ def main():
                             pygame.display.update()
                             userTurn = False
                             deepBlue(aiDepth,pieceDict, 0)
+                            kingChecked()
                             break
             # only do something if the event is of type QUIT
             elif event.type == pygame.QUIT:
@@ -587,6 +588,27 @@ def highlightMoves(piece, pieceRect):
         high.fill((230, 255, 41)) 
         thing = screen.blit(high, getBoard(place))
         moveClickList.append((thing, place))
+
+def kingChecked():
+    whitePieceList = []
+    blackPieceList = []
+    wKing = None
+    bKing = None
+    for _, piece in pieceDict.items():
+        if piece.Color == 'b': #white checked
+            if piece.Type == 'k':
+                bKing = piece.Pos
+            blackPieceList.append(moveList(piece))
+        else: #black checked
+            if piece.Type == 'k':
+                wKing = piece.Pos
+            whitePieceList.append(moveList(piece))
+    for killMoves in blackPieceList:
+        if wKing in killMoves:
+            screen.fill((255,255,255))
+    for killMoves in whitePieceList:
+        if bKing in killMoves:
+            screen.fill((0,0,0))
 
 def calcClock(timeStart, currentTime):
     secs = int(currentTime - timeStart)

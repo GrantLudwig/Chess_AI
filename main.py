@@ -18,20 +18,23 @@ chessBoard = pygame.image.load("assets/board.png")
 #trying something out here
 pieceList = [] # list of all pieces, for purposes of display...i think?
 posBoard = [['ee' for x in range(8)] for y in range(8)] 
+pieceDict = {} # dict of pieces
+                #key: (row,col) board
+                #value: gamePiece
 # 2d list representing the board, each location is one square
 # For example, a black pawn would be 'bp', empty is 'ee'
 
 # generalized class for game pieces
 class gamePiece():
 
-    def __init__(self, pieceImg, pieceType, initPos, color):
+    def __init__(self, pieceImg, pieceType, boardPos, color):
         self.Piece = pieceImg # pygame image of the piece
-        self.Pos = initPos # position of the piece, type = (float,float)
+        self.Pos = boardPos # position of the piece on board, (row,col)
         self.Color = color # single char, 'b' or 'w'
-        self.Type = pieceType # single char, what piece type it is
+        self.Type = pieceType   # single char, what piece type it is
+                                # 'r' = rook, 'n' = knight, 'b' = bishop
+                                # 'q' = queen, 'k' = king, 'p' = pawn
         self.First = True # for pawns, if this is their first move or not
-        # 'r' = rook, 'n' = knight, 'b' = bishop
-        # 'q' = queen, 'k' = king, 'p' = pawn
         # add more attributes as needed
 
     def movePiece(self, targetPos):
@@ -39,7 +42,8 @@ class gamePiece():
             self.Pos = targetPos
 
     def getPos(self):
-        return self.Pos
+        #r, c = self.Pos
+        return getBoard(self.Pos)
 
 
 # DUE TO HOW POSITIONS ARE CURRENTLY STORED, THIS FUNCTION WILL NOT WORK
@@ -93,9 +97,37 @@ def validMove(piece, targetPos, currentPos):
 
     return False
 
+#returns a list of the moves the piece can make
+# still need range check
+def moveList(piece):
+    list = []
+    currRow, currCol = piece.Pos
+    allyColor = piece.Color
+    enemyColor = None
+    if allyColor == 'b':
+        enemyColor =  'w'
+    else:
+        enemyColor = 'b'
+    if piece.Type == 'p': #pawn
+        if piece.First: #first move
+            if allyColor == 'w':
+                list.append((currRow, currCol + 1))
+                list.append((currRow, currCol + 2))
+            else:
+                list.append((currRow, currCol - 1))
+                list.append((currRow, currCol - 2))
+        else:
+            if allyColor == 'w':
+                list.append((currRow, currCol + 1))
+            else:
+                list.append((currRow, currCol - 1))
 
-def getBoard(row, col):
-    return board[(row,col)]
+
+#def getBoard(row, col):
+#   return board[(row,col)]
+
+def getBoard(bPos):
+    return board[bPos]
  
 # define a main function
 def main():
@@ -156,45 +188,45 @@ def main():
 
     # generalized piece initialization
     for pawnI in range(8):
-        pieceList.append(gamePiece(whitePawn, 'p', getBoard(6,pawnI), 'w'))
+        pieceList.append(gamePiece(whitePawn, 'p', (6,pawnI), 'w'))
         posBoard[6][pawnI] = 'wp'
-        pieceList.append(gamePiece(blackPawn, 'p', getBoard(1,pawnI), 'b'))
+        pieceList.append(gamePiece(blackPawn, 'p', (1,pawnI), 'b'))
         posBoard[1][pawnI] = 'bp'
     #Rooks
-    pieceList.append(gamePiece(whiteRook, 'r', getBoard(7,0), 'w'))
-    pieceList.append(gamePiece(whiteRook, 'r', getBoard(7,7), 'w'))
+    pieceList.append(gamePiece(whiteRook, 'r', (7,0), 'w'))
+    pieceList.append(gamePiece(whiteRook, 'r', (7,7), 'w'))
     posBoard[7][0] = 'wr'
     posBoard[7][7] = 'wr'
-    pieceList.append(gamePiece(blackRook, 'r', getBoard(0,0), 'b'))
-    pieceList.append(gamePiece(blackRook, 'r', getBoard(0,7), 'b'))
+    pieceList.append(gamePiece(blackRook, 'r', (0,0), 'b'))
+    pieceList.append(gamePiece(blackRook, 'r', (0,7), 'b'))
     posBoard[0][0] = 'br'
     posBoard[0][7] = 'br'
     #Knights
-    pieceList.append(gamePiece(whiteKnight, 'n', getBoard(7,1), 'w'))
-    pieceList.append(gamePiece(whiteKnight, 'n', getBoard(7,6), 'w'))
+    pieceList.append(gamePiece(whiteKnight, 'n', (7,1), 'w'))
+    pieceList.append(gamePiece(whiteKnight, 'n', (7,6), 'w'))
     posBoard[7][1] = 'wn'
     posBoard[7][6] = 'wn'
-    pieceList.append(gamePiece(blackKnight, 'n', getBoard(0,1), 'b'))
-    pieceList.append(gamePiece(blackKnight, 'n', getBoard(0,6), 'b'))
+    pieceList.append(gamePiece(blackKnight, 'n', (0,1), 'b'))
+    pieceList.append(gamePiece(blackKnight, 'n', (0,6), 'b'))
     posBoard[0][1] = 'bn'
     posBoard[0][6] = 'bn'
     #Bishops
-    pieceList.append(gamePiece(whiteBishop, 'b', getBoard(7,2), 'w'))
-    pieceList.append(gamePiece(whiteBishop, 'b', getBoard(7,5), 'w'))
+    pieceList.append(gamePiece(whiteBishop, 'b', (7,2), 'w'))
+    pieceList.append(gamePiece(whiteBishop, 'b', (7,5), 'w'))
     posBoard[7][2] = 'wb'
     posBoard[7][5] = 'wb'
-    pieceList.append(gamePiece(blackBishop, 'b', getBoard(0,2), 'b'))
-    pieceList.append(gamePiece(blackBishop, 'b', getBoard(0,5), 'b'))
+    pieceList.append(gamePiece(blackBishop, 'b', (0,2), 'b'))
+    pieceList.append(gamePiece(blackBishop, 'b', (0,5), 'b'))
     posBoard[0][2] = 'bb'
     posBoard[0][5] = 'bb'
     #Queens
-    pieceList.append(gamePiece(whiteQueen, 'q', getBoard(7,3), 'w'))
-    pieceList.append(gamePiece(blackQueen, 'q', getBoard(0,3), 'b'))
+    pieceList.append(gamePiece(whiteQueen, 'q', (7,3), 'w'))
+    pieceList.append(gamePiece(blackQueen, 'q', (0,3), 'b'))
     posBoard[7][3] = 'wq'
     posBoard[0][3] = 'bq'
     #Kings
-    pieceList.append(gamePiece(whiteKing, 'k', getBoard(7,4), 'w'))
-    pieceList.append(gamePiece(blackKing, 'k', getBoard(0,4), 'b'))
+    pieceList.append(gamePiece(whiteKing, 'k', (7,4), 'w'))
+    pieceList.append(gamePiece(blackKing, 'k', (0,4), 'b'))
     posBoard[7][4] = 'wk'
     posBoard[0][4] = 'bk'
 

@@ -13,7 +13,7 @@ screen_height = 512
 playClockTime = 90
 screen = pygame.display.set_mode((screen_width,screen_height))
 startTime = time.time()
-
+chessBoard = pygame.image.load("assets/board.png")
 
 #trying something out here
 pieceList = [] # list of all pieces, for purposes of display...i think?
@@ -119,10 +119,9 @@ def main():
     blackQueen = pygame.image.load("assets/queenB.png")
     whiteKing = pygame.image.load("assets/kingW.png")
     blackKing = pygame.image.load("assets/kingB.png")
-    board = pygame.image.load("assets/board.png")
 
     screen.fill((255,255,255))
-    screen.blit(board, (288,0))
+    screen.blit(chessBoard, (288,0))
 
     # thinking of making a list for game pieces?
     # maybe just loop through em
@@ -268,13 +267,15 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
                 for piece in pieceList:
-                    pieceRect = piece.Piece.get_rect()
-                    xp, yp = piece.getPos()
-                    pieceRect.x = xp
-                    pieceRect.y = yp
-                    if pieceRect.collidepoint(x, y):
-                        highlightPiece(pieceRect)
-                        pygame.display.update()
+                    if piece.Color == 'w':
+                        pieceRect = piece.Piece.get_rect()
+                        xp, yp = piece.getPos()
+                        pieceRect.x = xp
+                        pieceRect.y = yp
+                        if pieceRect.collidepoint(x, y):
+                            removePastHighlight(pieceList)
+                            highlightPiece(pieceRect)
+                            pygame.display.update()
                 #if board.get_rect().collidepoint(x, y):
                 #    highlightPiece(board.get_rect())
                 #    pygame.display.update()
@@ -291,8 +292,15 @@ def main():
         # check if the smily is still on screen, if not change direction
 
 def highlightPiece(pieceRect):
-    screen.fill((230, 255, 41, 0.5), pieceRect)
-    #pygame.draw.rect(screen, (230, 255, 41, 0.5), pieceRect)
+    high = pygame.Surface(pieceRect.size)
+    high.set_alpha(100)
+    high.fill((230, 255, 41)) 
+    screen.blit(high, (pieceRect.x,pieceRect.y))
+
+def removePastHighlight(pieceList):
+    screen.blit(chessBoard, (288,0))
+    for piece in pieceList:
+        screen.blit(piece.Piece, piece.getPos())
 
 def calcClock(timeStart, currentTime):
     secs = int(currentTime - timeStart)

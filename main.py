@@ -14,6 +14,7 @@ playClockTime = 90
 screen = pygame.display.set_mode((screen_width,screen_height))
 startTime = time.time()
 chessBoard = pygame.image.load("assets/board.png")
+moveClickList = []
 
 #trying something out here
 pieceDict = {} # dict of pieces
@@ -531,9 +532,9 @@ def main():
         pygame.display.update()
         # event handling, gets all event from the event queue
         for event in pygame.event.get():
-            # detection for clicking on a piece
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
+                # detection for clicking on a piece
                 for _, piece in pieceDict.items():
                     if piece.Color == 'w':
                         pieceRect = piece.Piece.get_rect()
@@ -545,20 +546,14 @@ def main():
                             highlightPiece(pieceRect)
                             highlightMoves(piece, pieceRect)
                             pygame.display.update()
-                #if board.get_rect().collidepoint(x, y):
-                #    highlightPiece(board.get_rect())
-                #    pygame.display.update()
-                #do something here
-                    # select what piece you clicked on.
-                    # if there's a piece selected, then check if it can move to the
-                    # position that you selected.
-                    # if yes, move the piece, else do nothing
+                #move detection
+                for move in moveClickList:
+                    if move.collidepoint(x, y):
+                        screen.fill((255,255,255))
             # only do something if the event is of type QUIT
             elif event.type == pygame.QUIT:
                 # change the value to False, to exit the main loop
                 running = False
-
-        # check if the smily is still on screen, if not change direction
 
 def highlightPiece(pieceRect):
     high = pygame.Surface(pieceRect.size)
@@ -567,17 +562,19 @@ def highlightPiece(pieceRect):
     screen.blit(high, (pieceRect.x,pieceRect.y))
 
 def removePastHighlight():
+    moveClickList = []
     screen.blit(chessBoard, (288,0))
     for _, piece in pieceDict.items():
         screen.blit(piece.Piece, piece.getPos())
 
 def highlightMoves(piece, pieceRect):
     list = moveList(piece)
-    high = pygame.Surface(pieceRect.size)
-    high.set_alpha(100)
-    high.fill((230, 255, 41)) 
     for place in list:
-        screen.blit(high, getBoard(place))
+        high = pygame.Surface(pieceRect.size)
+        high.set_alpha(100)
+        high.fill((230, 255, 41)) 
+        thing = screen.blit(high, getBoard(place))
+        moveClickList.append(thing)
 
 def calcClock(timeStart, currentTime):
     secs = int(currentTime - timeStart)

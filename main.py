@@ -4,6 +4,8 @@
 # import the pygame module, so you can use it
 import pygame
 import time
+from copy import deepcopy
+import sys
 
 boardSquareSize = 64
 pieceSize = 45
@@ -16,6 +18,8 @@ startTime = time.time()
 chessBoard = pygame.image.load("assets/board.png")
 moveClickList = []
 pieceClicked = None
+aiDepth = None
+userTurn = True
 
 #trying something out here
 pieceDict = {} # dict of pieces
@@ -27,7 +31,7 @@ pieceDict = {} # dict of pieces
 # generalized class for game pieces
 class gamePiece():
 
-    def __init__(self, pieceImg, pieceType, boardPos, color):
+    def __init__(self, pieceImg, pieceType, boardPos, color, value):
         self.Piece = pieceImg # pygame image of the piece
         self.Pos = boardPos # position of the piece on board, (row,col)
         self.Color = color # single char, 'b' or 'w'
@@ -35,6 +39,7 @@ class gamePiece():
                                 # 'r' = rook, 'n' = knight, 'b' = bishop
                                 # 'q' = queen, 'k' = king, 'p' = pawn
         self.First = True # for pawns, if this is their first move or not
+        self.Value = value # the value of a piece
         # add more attributes as needed
 
     def movePiece(self, targetPos):
@@ -382,6 +387,7 @@ def getBoard(bPos):
  
 # define a main function
 def main():
+    aiDepth = sys.argv[1]
     # initialize the pygame module
     pygame.init()
     # load and set the logo
@@ -411,29 +417,29 @@ def main():
 
     #builds the pieceDict
     for pawnI in range(8):
-        pieceDict[(6,pawnI)] = gamePiece(whitePawn, 'p', (6,pawnI), 'w')
-        pieceDict[(1,pawnI)] = gamePiece(blackPawn, 'p', (1,pawnI), 'b')
+        pieceDict[(6,pawnI)] = gamePiece(whitePawn, 'p', (6,pawnI), 'w', 10)
+        pieceDict[(1,pawnI)] = gamePiece(blackPawn, 'p', (1,pawnI), 'b', -10)
     #Rooks
-    pieceDict[(7,0)] = gamePiece(whiteRook, 'r', (7,0), 'w')
-    pieceDict[(7,7)] = gamePiece(whiteRook, 'r', (7,7), 'w')
-    pieceDict[(0,0)] = gamePiece(blackRook, 'r', (0,0), 'b')
-    pieceDict[(0,7)] = gamePiece(blackRook, 'r', (0,7), 'b')
+    pieceDict[(7,0)] = gamePiece(whiteRook, 'r', (7,0), 'w', 50)
+    pieceDict[(7,7)] = gamePiece(whiteRook, 'r', (7,7), 'w', 50)
+    pieceDict[(0,0)] = gamePiece(blackRook, 'r', (0,0), 'b', -50)
+    pieceDict[(0,7)] = gamePiece(blackRook, 'r', (0,7), 'b', -50)
     #Knights
-    pieceDict[(7,1)] = gamePiece(whiteKnight, 'n', (7,1), 'w')
-    pieceDict[(7,6)] = gamePiece(whiteKnight, 'n', (7,6), 'w')
-    pieceDict[(0,1)] = gamePiece(blackKnight, 'n', (0,1), 'b')
-    pieceDict[(0,6)] = gamePiece(blackKnight, 'n', (0,6), 'b')
+    pieceDict[(7,1)] = gamePiece(whiteKnight, 'n', (7,1), 'w', 30)
+    pieceDict[(7,6)] = gamePiece(whiteKnight, 'n', (7,6), 'w', 30)
+    pieceDict[(0,1)] = gamePiece(blackKnight, 'n', (0,1), 'b', -30)
+    pieceDict[(0,6)] = gamePiece(blackKnight, 'n', (0,6), 'b', -30)
     #Bishops
-    pieceDict[(7,2)] = gamePiece(whiteBishop, 'b', (7,2), 'w')
-    pieceDict[(7,5)] = gamePiece(whiteBishop, 'b', (7,5), 'w')
-    pieceDict[(0,2)] = gamePiece(blackBishop, 'b', (0,2), 'b')
-    pieceDict[(0,5)] = gamePiece(blackBishop, 'b', (0,5), 'b')
+    pieceDict[(7,2)] = gamePiece(whiteBishop, 'b', (7,2), 'w', 30)
+    pieceDict[(7,5)] = gamePiece(whiteBishop, 'b', (7,5), 'w', 30)
+    pieceDict[(0,2)] = gamePiece(blackBishop, 'b', (0,2), 'b', -30)
+    pieceDict[(0,5)] = gamePiece(blackBishop, 'b', (0,5), 'b', -30)
     #Queens
-    pieceDict[(7,3)] = gamePiece(whiteQueen, 'q', (7,3), 'w')
-    pieceDict[(0,3)] = gamePiece(blackQueen, 'q', (0,3), 'b')
+    pieceDict[(7,3)] = gamePiece(whiteQueen, 'q', (7,3), 'w', 90)
+    pieceDict[(0,3)] = gamePiece(blackQueen, 'q', (0,3), 'b', -90)
     #Kings
-    pieceDict[(7,4)] = gamePiece(whiteKing, 'k', (7,4), 'w')
-    pieceDict[(0,4)] = gamePiece(blackKing, 'k', (0,4), 'b')
+    pieceDict[(7,4)] = gamePiece(whiteKing, 'k', (7,4), 'w', 900)
+    pieceDict[(0,4)] = gamePiece(blackKing, 'k', (0,4), 'b', -900)
 
     # all pieces displayed by this
     for _, piece in pieceDict.items():
@@ -461,7 +467,7 @@ def main():
         pygame.display.update()
         # event handling, gets all event from the event queue
         for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN and userTurn:
                 x, y = event.pos
                 # detection for clicking on a piece
                 for _, piece in pieceDict.items():
@@ -486,11 +492,30 @@ def main():
                             removePastHighlight()
                             pieceClicked = None
                             pygame.display.update()
+                            userTurn = False
+                            deepBlue(aiDepth,pieceDict, 0)
                             break
             # only do something if the event is of type QUIT
             elif event.type == pygame.QUIT:
                 # change the value to False, to exit the main loop
                 running = False
+
+def deepBlue(depth, pieceLocations, moveValue):
+    if depth < 1:
+        return 
+    list = []
+    allyColor = 'b'
+    mimicBoard = deepcopy(pieceLocations)
+    for _, piece in mimicBoard.items():
+        if piece.Color == allyColor:
+            list.append(piece)
+    for piece in list:
+        moves = moveList(piece)
+        for move in moves:
+            piece.movePiece(move)
+            mimicBoard[move] = piece
+            deepBlue(depth - 1, mimicBoard, moveValue)
+
 
 def highlightPiece(pieceRect):
     high = pygame.Surface(pieceRect.size)

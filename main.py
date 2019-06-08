@@ -489,6 +489,7 @@ def main():
     running = True
     global userTurn
     useless = 0
+    global pieceClicked
 
     # main loop
     while running:
@@ -521,7 +522,7 @@ def main():
                             #attack check
                             if boardPos in pieceDict:
                                 userCapture.append(pieceDict[boardPos].getPiece())
-                                updateCapture(False)
+                                updateCapture(True)
                             pieceDict[boardPos] = pieceClicked
                             removePastHighlight()
                             pieceClicked = None
@@ -531,10 +532,11 @@ def main():
                             kingChecked()
                             useless, targetMove, targetPiece = deepBlue(aiDepth,pieceDict, 'b', 0)
                             aiPiece = pieceDict[targetPiece]
+                            del pieceDict[aiPiece.Pos]
                             aiPiece.movePiece(targetMove)
                             if targetMove in pieceDict:
                                 userCapture.append(pieceDict[targetMove].getPiece())
-                                updateCapture(True)
+                                updateCapture(False)
                             pieceDict[targetMove] = aiPiece
                             removePastHighlight()
                             pygame.display.update()
@@ -602,6 +604,7 @@ def updateCapture(user):
             elif i < 15:
                 screen.blit(userCapture[i], (805 + (i - 10) * 50, 135))
     else:
+        #update user
         for i in range(0,len(userCapture)):
             if i < 5:
                 screen.blit(userCapture[i], (805 + i * 50, 291))

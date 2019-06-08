@@ -35,7 +35,7 @@ pieceDict = {} # dict of pieces
 class gamePiece():
 
     def __init__(self, pieceImg, pieceType, boardPos, color, value):
-        self.Piece = pieceImg # pygame image of the piece
+        self.Piece = pygame.image.tostring(pieceImg,"RGBA") # pygame image of the piece
         self.Pos = boardPos # position of the piece on board, (row,col)
         self.Color = color # single char, 'b' or 'w'
         self.Type = pieceType   # single char, what piece type it is
@@ -44,6 +44,9 @@ class gamePiece():
         self.First = True # for pawns, if this is their first move or not
         self.Value = value # the value of a piece
         # add more attributes as needed
+
+    def getPiece(self):
+        return pygame.image.frombuffer(self.Piece, (45,45), "RGBA")
 
     def movePiece(self, targetPos):
         self.Pos = targetPos
@@ -413,7 +416,7 @@ def getBoard(bPos):
  
 # define a main function
 def main():
-    aiDepth = sys.argv[1]
+    aiDepth = int(sys.argv[1])
     # initialize the pygame module
     pygame.init()
     # load and set the logo
@@ -468,8 +471,7 @@ def main():
     pieceDict[(0,4)] = gamePiece(blackKing, 'k', (0,4), 'b', -900)
 
     # all pieces displayed by this
-    for _, piece in pieceDict.items():
-        screen.blit(piece.Piece, piece.getPos())
+    displayPieces()
 
     #Text
     message_display('Game Time:', (5,0))
@@ -486,7 +488,8 @@ def main():
     # define a variable to control the main loop
     running = True
     global userTurn
-    
+    useless = 0
+
     # main loop
     while running:
         message_display(calcClock(startTime, time.time()), (5,35))
@@ -499,7 +502,7 @@ def main():
                 # detection for clicking on a piece
                 for _, piece in pieceDict.items():
                     if piece.Color == 'w':
-                        pieceRect = piece.Piece.get_rect()
+                        pieceRect = piece.getPiece().get_rect()
                         xp, yp = piece.getPos()
                         pieceRect.x = xp
                         pieceRect.y = yp
@@ -517,36 +520,75 @@ def main():
                             pieceClicked.movePiece(boardPos)
                             #attack check
                             if boardPos in pieceDict:
-                                userCapture.append(pieceDict[boardPos].Piece)
+                                userCapture.append(pieceDict[boardPos].getPiece())
                                 updateCapture(True)
                             pieceDict[boardPos] = pieceClicked
                             removePastHighlight()
                             pieceClicked = None
                             pygame.display.update()
                             userTurn = False
-                            deepBlue(aiDepth,pieceDict, 0)
                             kingChecked()
+                            useless, targetMove, targetPiece = deepBlue(aiDepth,pieceDict, 'b', 0)
+                            aiPiece = pieceDict[targetPiece]
+                            del pieceDict[targetPiece]
+                            aiPiece.movePiece(targetMove)
+                            pieceDict[targetMove] = aiPiece
+                            screen.blit(chessBoard, (288,0))
+                            displayPieces()
+                            pygame.display.update()
+                            userTurn = True
                             break
             # only do something if the event is of type QUIT
             elif event.type == pygame.QUIT:
                 # change the value to False, to exit the main loop
                 running = False
 
-def deepBlue(depth, pieceLocations, moveValue):
+def deepBlue(depth, pieceLocations, teamColor, moveValue):
     if depth < 1:
-        return 
+        return (moveValue, (0,0), (0,0))
     list = []
-    allyColor = 'b'
+    if teamColor == 'b':
+        enemyColor = 'w'
+    else:
+        enemyColor = 'b'
+    totalValue = 0
+    bestValue = moveValue
+    bestMove = (0,0)
+    bestPiece = (0,0)
     mimicBoard = deepcopy(pieceLocations)
     for _, piece in mimicBoard.items():
-        if piece.Color == allyColor:
+        if piece.Color == teamColor:
             list.append(piece)
     for piece in list:
         moves = moveList(piece)
         for move in moves:
+            oldPos = piece.Pos
+            mimicBoard = deepcopy(pieceLocations)
             piece.movePiece(move)
             mimicBoard[move] = piece
-            deepBlue(depth - 1, mimicBoard, moveValue)
+            for _, newPiece in mimicBoard.items():
+                totalValue = totalValue + newPiece.Value
+            potentialValue, potentialMove, potentialPiece = deepBlue(depth - 1, mimicBoard, enemyColor, totalValue)
+            piece.movePiece(oldPos)
+            if teamColor == 'b':
+                if potentialValue < bestValue:
+                    bestValue = potentialValue
+                    bestMove = potentialMove
+                    bestPiece = piece.Pos
+            else:
+                if potentialValue > bestValue:
+                    bestValue = potentialValue
+                    bestMove = potentialMove
+                    bestPiece = piece.Pos
+        if bestMove == (0,0) and bestPiece == (0,0):
+            bestPiece = piece.Pos
+            bestMove = moves[0]
+    return (bestValue, bestMove, bestPiece)
+
+
+def displayPieces():
+    for _, piece in pieceDict.items():
+        screen.blit(piece.getPiece(), piece.getPos())
 
 def updateCapture(user):
     if user:
@@ -567,6 +609,7 @@ def updateCapture(user):
         elif i < 15:
             screen.blit(userCapture[i], (805 + (i - 10) * 50, 391))
 
+
 def highlightPiece(pieceRect):
     high = pygame.Surface(pieceRect.size)
     high.set_alpha(100)
@@ -576,9 +619,7 @@ def highlightPiece(pieceRect):
 def removePastHighlight():
     del moveClickList[0:-1]
     screen.blit(chessBoard, (288,0))
-    for _, piece in pieceDict.items():
-        #print(piece.Pos)
-        screen.blit(piece.Piece, piece.getPos())
+    displayPieces()
 
 def highlightMoves(piece, pieceRect):
     list = moveList(piece)

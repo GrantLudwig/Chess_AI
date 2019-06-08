@@ -526,6 +526,7 @@ def main():
                             removePastHighlight()
                             pieceClicked = None
                             pygame.display.update()
+                            #AI
                             userTurn = False
                             kingChecked()
                             useless, targetMove, targetPiece = deepBlue(aiDepth,pieceDict, 'b', 0)
@@ -535,8 +536,7 @@ def main():
                                 userCapture.append(pieceDict[targetMove].getPiece())
                                 updateCapture(True)
                             pieceDict[targetMove] = aiPiece
-                            screen.blit(chessBoard, (288,0))
-                            displayPieces()
+                            removePastHighlight()
                             pygame.display.update()
                             userTurn = True
                             break
@@ -593,8 +593,8 @@ def displayPieces():
         screen.blit(piece.getPiece(), piece.getPos())
 
 def updateCapture(user):
-    if user:
-        #update user
+    if not user:
+        #update AI
         for i in range(0,len(userCapture)):
             if i < 5:
                 screen.blit(userCapture[i], (805 + i * 50, 35))
@@ -603,7 +603,6 @@ def updateCapture(user):
             elif i < 15:
                 screen.blit(userCapture[i], (805 + (i - 10) * 50, 135))
     else:
-        #update AI
         for i in range(0,len(userCapture)):
             if i < 5:
                 screen.blit(userCapture[i], (805 + i * 50, 291))

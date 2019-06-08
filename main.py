@@ -521,7 +521,7 @@ def main():
                             #attack check
                             if boardPos in pieceDict:
                                 userCapture.append(pieceDict[boardPos].getPiece())
-                                updateCapture(True)
+                                updateCapture(False)
                             pieceDict[boardPos] = pieceClicked
                             removePastHighlight()
                             pieceClicked = None
@@ -530,8 +530,10 @@ def main():
                             kingChecked()
                             useless, targetMove, targetPiece = deepBlue(aiDepth,pieceDict, 'b', 0)
                             aiPiece = pieceDict[targetPiece]
-                            del pieceDict[targetPiece]
                             aiPiece.movePiece(targetMove)
+                            if targetMove in pieceDict:
+                                userCapture.append(pieceDict[targetMove].getPiece())
+                                updateCapture(True)
                             pieceDict[targetMove] = aiPiece
                             screen.blit(chessBoard, (288,0))
                             displayPieces()
@@ -580,7 +582,7 @@ def deepBlue(depth, pieceLocations, teamColor, moveValue):
                     bestValue = potentialValue
                     bestMove = potentialMove
                     bestPiece = piece.Pos
-        if bestMove == (0,0) and bestPiece == (0,0):
+        if bestMove == (0,0) and bestPiece == (0,0) and len(moves) > 0:
             bestPiece = piece.Pos
             bestMove = moves[0]
     return (bestValue, bestMove, bestPiece)
@@ -602,12 +604,13 @@ def updateCapture(user):
                 screen.blit(userCapture[i], (805 + (i - 10) * 50, 135))
     else:
         #update AI
-        if i < 5:
-            screen.blit(userCapture[i], (805 + i * 50, 291))
-        elif i < 10:
-            screen.blit(userCapture[i], (805 + (i - 5) * 50, 341))
-        elif i < 15:
-            screen.blit(userCapture[i], (805 + (i - 10) * 50, 391))
+        for i in range(0,len(userCapture)):
+            if i < 5:
+                screen.blit(userCapture[i], (805 + i * 50, 291))
+            elif i < 10:
+                screen.blit(userCapture[i], (805 + (i - 5) * 50, 341))
+            elif i < 15:
+                screen.blit(userCapture[i], (805 + (i - 10) * 50, 391))
 
 
 def highlightPiece(pieceRect):

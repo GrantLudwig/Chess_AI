@@ -14,6 +14,7 @@ playClockTime = 90
 screen = pygame.display.set_mode((screen_width,screen_height))
 startTime = time.time()
 
+
 #trying something out here
 pieceList = [] # list of all pieces, for purposes of display...i think?
 posBoard = [['ee' for x in range(8)] for y in range(8)] 
@@ -101,24 +102,24 @@ def main():
     # initialize the pygame module
     pygame.init()
     # load and set the logo
-    logo = pygame.image.load("pawnW.png")
+    logo = pygame.image.load("assets/pawnW.png")
     pygame.display.set_icon(logo)
     pygame.display.set_caption("Chess")
 
     # load image (it is in same directory)
-    whitePawn = pygame.image.load("pawnW.png")
-    blackPawn = pygame.image.load("pawnB.png")
-    whiteRook = pygame.image.load("rookW.png")
-    blackRook = pygame.image.load("rookB.png")
-    whiteKnight = pygame.image.load("knightW.png")
-    blackKnight = pygame.image.load("knightB.png")
-    whiteBishop = pygame.image.load("bishopW.png")
-    blackBishop = pygame.image.load("bishopB.png")
-    whiteQueen = pygame.image.load("queenW.png")
-    blackQueen = pygame.image.load("queenB.png")
-    whiteKing = pygame.image.load("kingW.png")
-    blackKing = pygame.image.load("kingB.png")
-    board = pygame.image.load("board.png")
+    whitePawn = pygame.image.load("assets/pawnW.png")
+    blackPawn = pygame.image.load("assets/pawnB.png")
+    whiteRook = pygame.image.load("assets/rookW.png")
+    blackRook = pygame.image.load("assets/rookB.png")
+    whiteKnight = pygame.image.load("assets/knightW.png")
+    blackKnight = pygame.image.load("assets/knightB.png")
+    whiteBishop = pygame.image.load("assets/bishopW.png")
+    blackBishop = pygame.image.load("assets/bishopB.png")
+    whiteQueen = pygame.image.load("assets/queenW.png")
+    blackQueen = pygame.image.load("assets/queenB.png")
+    whiteKing = pygame.image.load("assets/kingW.png")
+    blackKing = pygame.image.load("assets/kingB.png")
+    board = pygame.image.load("assets/board.png")
 
     screen.fill((255,255,255))
     screen.blit(board, (288,0))

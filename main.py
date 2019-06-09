@@ -494,6 +494,7 @@ def main():
     useless = 0
     global pieceClicked
 
+
     # main loop
     while running:
         message_display(calcClock(startTime, time.time()), (5,35))

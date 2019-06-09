@@ -6,6 +6,7 @@ import pygame
 import time
 from copy import deepcopy
 import sys
+from random import random
 
 boardSquareSize = 64
 pieceSize = 45
@@ -557,24 +558,26 @@ def deepBlue(depth, pieceLocations, teamColor, moveValue):
         enemyColor = 'b'
     totalValue = 0
     bestValue = moveValue
-    bestMove = (0,0)
-    bestPiece = (0,0)
+    bestMove = (-1,-1)
+    bestPiece = (-1,-1)
     mimicBoard = deepcopy(pieceLocations)
     for _, piece in mimicBoard.items():
         if piece.Color == teamColor:
             list.append(piece)
     for piece in list:
-        print(piece.Type + " " + piece.Color)
         moves = moveList(piece)
-        for move in moves:
-            oldPos = piece.Pos
+        oldPos = piece.Pos
+        for move in moves: 
             mimicBoard = deepcopy(pieceLocations)
+            del mimicBoard[piece.Pos]
             piece.movePiece(move)
             mimicBoard[move] = piece
             for _, newPiece in mimicBoard.items():
                 totalValue = totalValue + newPiece.Value
             potentialValue, potentialMove, potentialPiece = deepBlue(depth - 1, mimicBoard, enemyColor, totalValue)
+            del mimicBoard[piece.Pos]
             piece.movePiece(oldPos)
+            mimicBoard[oldPos] = piece
             if teamColor == 'b':
                 if potentialValue < bestValue:
                     bestValue = potentialValue
@@ -583,9 +586,20 @@ def deepBlue(depth, pieceLocations, teamColor, moveValue):
             else:
                 if potentialValue > bestValue:
                     bestValue = potentialValue
-        if bestMove == (0,0) and bestPiece == (0,0) and len(moves) > 0 and teamColor == 'b':
-            bestPiece = piece.Pos
-            bestMove = moves[0]
+    if bestPiece == (-1,-1):
+        found = False
+        while not found:
+            num = int(random()*len(list))
+            bestPiece = list[num].Pos
+            randMoves = moveList(mimicBoard[bestPiece])
+            if len(randMoves) > 0:
+                num = int(random()*len(randMoves))
+                bestMove = randMoves[num]
+                fround = True
+                break
+            else:
+                del list[num]
+
     return (bestValue, bestMove, bestPiece)
 
 
@@ -596,13 +610,13 @@ def displayPieces():
 def updateCapture(user):
     if not user:
         #update AI
-        for i in range(0,len(userCapture)):
+        for i in range(0,len(aiCapture)):
             if i < 5:
-                screen.blit(userCapture[i], (805 + i * 50, 35))
+                screen.blit(aiCapture[i], (805 + i * 50, 35))
             elif i < 10:
-                screen.blit(userCapture[i], (805 + (i - 5) * 50, 85))
+                screen.blit(aiCapture[i], (805 + (i - 5) * 50, 85))
             elif i < 15:
-                screen.blit(userCapture[i], (805 + (i - 10) * 50, 135))
+                screen.blit(aiCapture[i], (805 + (i - 10) * 50, 135))
     else:
         #update user
         for i in range(0,len(userCapture)):

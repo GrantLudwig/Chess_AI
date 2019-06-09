@@ -71,24 +71,25 @@ def moveList(piece):
     #pawn
     #need bounds checking
     if piece.Type == 'p': 
+        done = False
         if piece.First: #first move
             if allyColor == 'b':
                 if (currRow + 1, currCol) in pieceDict:
-                    nothing = None
+                    done = True
                 else:
                     list.append((currRow + 1, currCol))
                 if (currRow + 2, currCol) in pieceDict:
                     nothing = None
-                else:
+                elif not done:
                     list.append((currRow + 2, currCol))
             else:
                 if (currRow - 1, currCol) in pieceDict:
-                    nothing = None
+                    done = True
                 else:
                     list.append((currRow - 1, currCol))
-                if (currRow - 2, currCol) in pieceDict:
+                if (currRow - 2, currCol) in pieceDict and not done:
                     nothing = None
-                else:
+                elif not done:
                     list.append((currRow - 2, currCol))
         else:
             if allyColor == 'b':
@@ -504,7 +505,7 @@ def main():
             del pieceDict[aiPiece.Pos]
             aiPiece.movePiece(targetMove)
             if targetMove in pieceDict:
-                userCapture.append(pieceDict[targetMove].getPiece())
+                aiCapture.append(pieceDict[targetMove].getPiece())
                 updateCapture(False)
             pieceDict[targetMove] = aiPiece
             removePastHighlight()
@@ -513,45 +514,47 @@ def main():
             userTurn = True
         # event handling, gets all event from the event queue
         for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONDOWN and userTurn:
-                x, y = event.pos
-                # detection for clicking on a piece
-                for _, piece in pieceDict.items():
-                    if piece.Color == 'w':
-                        pieceRect = piece.getPiece().get_rect()
-                        xp, yp = piece.getPos()
-                        pieceRect.x = xp
-                        pieceRect.y = yp
-                        if pieceRect.collidepoint(x, y):
-                            pieceClicked = piece
-                            removePastHighlight()
-                            highlightPiece(pieceRect)
-                            highlightMoves(piece, pieceRect)
-                            pygame.display.update()
-                #move detection
-                if pieceClicked != None:
-                    for move, boardPos in moveClickList:
-                        if move.collidepoint(x, y):
-                            del pieceDict[pieceClicked.Pos]
-                            pieceClicked.movePiece(boardPos)
-                            #attack check
-                            if boardPos in pieceDict:
-                                userCapture.append(pieceDict[boardPos].getPiece())
-                                updateCapture(True)
-                            pieceDict[boardPos] = pieceClicked
-                            removePastHighlight()
-                            pieceClicked = None
-                            pygame.display.update()
-                            userTurn = False
-                            break
+            if userTurn:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    x, y = event.pos
+                    # detection for clicking on a piece
+                    for _, piece in pieceDict.items():
+                        if piece.Color == 'w':
+                            pieceRect = piece.getPiece().get_rect()
+                            xp, yp = piece.getPos()
+                            pieceRect.x = xp
+                            pieceRect.y = yp
+                            if pieceRect.collidepoint(x, y):
+                                removePastHighlight()
+                                highlightPiece(pieceRect)
+                                highlightMoves(piece, pieceRect)
+                                pieceClicked = piece
+                                pygame.display.update()
+                                break
+                    #move detection
+                    if pieceClicked != None:
+                        for move, boardPos in moveClickList:
+                            if move.collidepoint(x, y):
+                                del pieceDict[pieceClicked.Pos]
+                                pieceClicked.movePiece(boardPos)
+                                #attack check
+                                if boardPos in pieceDict:
+                                    userCapture.append(pieceDict[boardPos].getPiece())
+                                    updateCapture(True)
+                                pieceDict[boardPos] = pieceClicked
+                                removePastHighlight()
+                                pieceClicked = None
+                                pygame.display.update()
+                                userTurn = False
+                                break
             # only do something if the event is of type QUIT
-            elif event.type == pygame.QUIT:
+            if event.type == pygame.QUIT:
                 # change the value to False, to exit the main loop
                 running = False
 
 def deepBlue(depth, pieceLocations, teamColor, moveValue):
     if depth < 1:
-        return (moveValue, (0,0), (0,0))
+        return (moveValue, (-1,-1), (-1,-1))
     list = []
     if teamColor == 'b':
         enemyColor = 'w'
@@ -567,7 +570,7 @@ def deepBlue(depth, pieceLocations, teamColor, moveValue):
             list.append(piece)
     for piece in list:
         moves = moveList(piece)
-        oldPos = piece.Pos
+        oldPos = deepcopy(piece.Pos)
         for move in moves: 
             mimicBoard = deepcopy(pieceLocations)
             del mimicBoard[piece.Pos]
@@ -587,6 +590,8 @@ def deepBlue(depth, pieceLocations, teamColor, moveValue):
             else:
                 if potentialValue > bestValue:
                     bestValue = potentialValue
+                    bestMove = potentialMove
+                    bestPiece = piece.Pos
     if bestPiece == (-1,-1):
         found = False
         while not found:
@@ -596,8 +601,7 @@ def deepBlue(depth, pieceLocations, teamColor, moveValue):
             if len(randMoves) > 0:
                 num = int(random()*len(randMoves))
                 bestMove = randMoves[num]
-                fround = True
-                break
+                found = True
             else:
                 del list[num]
 
@@ -636,7 +640,7 @@ def highlightPiece(pieceRect):
     screen.blit(high, (pieceRect.x,pieceRect.y))
 
 def removePastHighlight():
-    del moveClickList[0:-1]
+    moveClickList.clear()
     screen.blit(chessBoard, (288,0))
     displayPieces()
 
@@ -665,10 +669,12 @@ def kingChecked():
             whitePieceList.append(moveList(piece))
     for killMoves in blackPieceList:
         if wKing in killMoves:
-            screen.fill((255,255,255))
+            #screen.fill((255,255,255))
+            nothing = None
     for killMoves in whitePieceList:
         if bKing in killMoves:
-            screen.fill((0,0,0))
+            #screen.fill((0,0,0))
+            nothing = None
 
 def calcClock(timeStart, currentTime):
     secs = int(currentTime - timeStart)

@@ -1,4 +1,4 @@
-#main.py v1.0
+#main.py v8.0
 #Grant Ludwig and Mitch Downey
 
 # import the pygame module, so you can use it
@@ -30,13 +30,12 @@ bChecked = False
 running = True
 bCheckedPieces = []
 wCheckedPieces = []
+wKing = None
+bKing = None
 
-#trying something out here
 pieceDict = {} # dict of pieces
                 #key: (row,col) board
                 #value: gamePiece
-# 2d list representing the board, each location is one square
-# For example, a black pawn would be 'bp', empty is 'ee'
 
 # generalized class for game pieces
 class gamePiece():
@@ -63,11 +62,9 @@ class gamePiece():
         self.First = False
 
     def getPos(self):
-        #r, c = self.Pos
         return getBoard(self.Pos)
 
 #returns a list of the moves the piece can make
-# still need range check
 def moveList(piece):
     list = []
     currRow, currCol = piece.Pos
@@ -79,7 +76,6 @@ def moveList(piece):
         enemyColor = 'b'
 
     #pawn
-    #need bounds checking
     if piece.Type == 'p': 
         done = False
         if piece.First: #first move
@@ -420,9 +416,6 @@ def kingCheck(row, col, list, allyColor):
         else:
             list.append((row, col))
 
-#def getBoard(row, col):
-#   return board[(row,col)]
-
 def getBoard(bPos):
     return board[bPos]
  
@@ -452,9 +445,6 @@ def main():
 
     screen.fill((255,255,255))
     screen.blit(chessBoard, (288,0))
-
-    # thinking of making a list for game pieces?
-    # maybe just loop through em
 
     #builds the pieceDict
     for pawnI in range(8):
@@ -487,22 +477,17 @@ def main():
 
     #Text
     message_display('Game Time:', (5,0))
-    #message_display('Play Timer:', (5,70))
     message_display('Captured by AI', (805,0))
     message_display('Captured by User', (805,256))
     
     # update the screen to make the changes visible (fullscreen update)
     pygame.display.flip()
-    #pygame.display.update() need to figure out difference
-
-    #clock = pygame.time.Clock()
     
     # define a variable to control the main loop
     pygame.display.update()
     useless = 0
     global running
     global userTurn
-    useless = 0
     global pieceClicked
 
     # main loop
@@ -510,12 +495,10 @@ def main():
 
     while running:
         message_display(calcClock(startTime, time.time()), (5,35))
-        #message_display(calcTimer(startTime,time.time()), (5,105))
         pygame.display.update()
         #AI
         if not userTurn:
             useless, targetMove, targetPiece = deepBlue(aiDepth, pieceDict, -100000, 100000, False)
-            #moveDict = []
             aiPiece = pieceDict[targetPiece]
             del pieceDict[aiPiece.Pos]
             aiPiece.movePiece(targetMove)
@@ -567,7 +550,6 @@ def main():
                                 kingChecked()
                                 userTurn = False
                                 break
-            # only do something if the event is of type QUIT
             if event.type == pygame.QUIT:
                 # change the value to False, to exit the main loop
                 running = False
@@ -669,7 +651,6 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
 
 def displayPieces():
     for _, piece in pieceDict.items():
-        #print(str(piece.Pos))
         screen.blit(piece.getPiece(), piece.getPos())
 
 def updateCapture(user):
@@ -744,10 +725,10 @@ def kingChecked():
     global bChecked
     global bCheckedPieces
     global wCheckedPieces
+    global wKing
+    global bKing
     whitePieceList = []
     blackPieceList = []
-    wKing = None
-    bKing = None
     changedW = False
     changedB = False
     for _, piece in pieceDict.items():
@@ -788,6 +769,8 @@ def kingChecked():
 def checkedMoves(piece):
     global wChecked
     global bChecked
+    global wKing
+    global bKing
     pieceList = []
     list = [] #list of moves king can do
     if piece.Type == 'k':
@@ -874,19 +857,55 @@ def checkedMoves(piece):
             return list, True
         return list, False
     else:
-        print(bCheckedPieces, wCheckedPieces)
         list = moveList(piece)
         actualMoves = []
-        print("LIST", list)
         for move in list:
-            print("Checking", move)
             if piece.Color == 'b':
-                if move in bCheckedPieces:
+                if move in bCheckedPieces or blocked(bCheckedPieces, move, bKing):
                     actualMoves.append(move)
             else:
-                if move in wCheckedPieces:
+                if move in wCheckedPieces or blocked(wCheckedPieces, move, wKing):
                     actualMoves.append(move)
         return actualMoves, False
+
+def blocked(checkedPieces, move, kingPos):
+    rKing, cKing = kingPos
+    rMove, cMove = move
+    for pos in checkedPieces:
+        checkedR, checkedC = pos
+        #hor
+        if checkedR == rKing and rMove == checkedR:
+            if checkedC < cKing and cMove < cKing and cMove > checkedC:
+                return True
+            elif checkedC > cKing and cMove > cKing and cMove < checkedC:
+                return True
+        #vert
+        if checkedC == cKing and cMove == checkedC:
+            if checkedR < rKing and rMove < rKing and rMove > checkedR:
+                return True
+            elif checkedR > rKing and rMove > rKing and rMove < checkedR:
+                return True
+        diagList = []
+        #diag
+        #up left
+        for row, col in zip(range(rKing - 1, checkedR, -1), range(cKing - 1, checkedC, -1)):
+            if col >= 0 and col < 8 and row >= 0 and row < 8:
+                diagList.append((row, col))
+        #up right
+        for row, col in zip(range(rKing - 1, checkedR, -1), range(cKing + 1, checkedC, 1)):
+            if col >= 0 and col < 8 and row >= 0 and row < 8:
+                diagList.append((row, col))
+        #down left
+        for row, col in zip(range(rKing + 1, checkedR, 1), range(cKing - 1, checkedC, -1)):
+            if col >= 0 and col < 8 and row >= 0 and row < 8:
+                diagList.append((row, col))
+        #down right
+        for row, col in zip(range(rKing + 1, checkedR, 1), range(cKing + 1, checkedC, 1)):
+            if col >= 0 and col < 8 and row >= 0 and row < 8:
+                diagList.append((row, col))
+        if move in diagList:
+            return True
+    return False
 
 def calcClock(timeStart, currentTime):
     secs = int(currentTime - timeStart)

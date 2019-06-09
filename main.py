@@ -53,6 +53,9 @@ class gamePiece():
     def getPiece(self):
         return pygame.image.frombuffer(self.Piece, (45,45), "RGBA")
 
+    def changePiece(self, img):
+        self.Piece = pygame.image.tostring(img,"RGBA")
+
     def movePiece(self, targetPos):
         self.Pos = targetPos
         self.First = False
@@ -123,7 +126,7 @@ def moveList(piece):
                         list.append((currRow + 1, currCol - 1))
         else:
             #right
-            if currCol - 1 >= 0 and currCol - 1 < 8 and currRow + 1 >= 0 and currRow + 1 < 8:
+            if currCol + 1 >= 0 and currCol + 1 < 8 and currRow - 1 >= 0 and currRow - 1 < 8:
                 if (currRow - 1, currCol + 1) in pieceDict:
                     if pieceDict[(currRow - 1, currCol + 1)].Color != allyColor:
                         list.append((currRow - 1, currCol + 1))
@@ -431,7 +434,7 @@ def main():
     pygame.display.set_icon(logo)
     pygame.display.set_caption("Chess")
 
-    # load image (it is in same directory)
+    # load image
     whitePawn = pygame.image.load("assets/pawnW.png")
     blackPawn = pygame.image.load("assets/pawnB.png")
     whiteRook = pygame.image.load("assets/rookW.png")
@@ -514,6 +517,7 @@ def main():
                 updateCapture(False)
             pieceDict[targetMove] = aiPiece
             removePastHighlight()
+            pawnCheck(whiteQueen)
             pygame.display.update()
             kingChecked()
             userTurn = True
@@ -551,6 +555,7 @@ def main():
                                 pieceDict[boardPos] = pieceClicked
                                 removePastHighlight()
                                 pieceClicked = None
+                                pawnCheck(whiteQueen)
                                 pygame.display.update()
                                 kingChecked()
                                 userTurn = False
@@ -743,6 +748,24 @@ def highlightMoves(piece, pieceRect):
         thing = screen.blit(high, getBoard(place))
         moveClickList.append((thing, place))
 
+def pawnCheck(queenImage):
+    for _, piece in pieceDict.items():
+        if piece.Type == 'p':
+            if piece.Color == 'w':
+                row, _ = piece.Pos
+                if row == 0:
+                    piece.Type = 'q'
+                    piece.changePiece(queenImage)
+                    piece.Value = 90
+                    pieceDict[piece.Pos] = piece
+            else:
+                row, _ = piece.Pos
+                if row == 7:
+                    piece.Type = 'q'
+                    piece.changePiece(queenImage)
+                    piece.Value = -90
+                    pieceDict[piece.Pos] = piece
+
 def kingChecked():
     global wChecked
     global bChecked
@@ -759,7 +782,6 @@ def kingChecked():
             if piece.Type == 'k':
                 wKing = piece.Pos
             whitePieceList.append(moveList(piece))
-    print(wKing, bKing)
     if wKing == None:
         endGame(True)
     elif bKing == None:
@@ -823,6 +845,7 @@ def checkedMoves(piece):
                 moves = []
                 if singlePiece.Type == 'p':
                     currRow, currCol = singlePiece.Pos
+                    allyColor = singlePiece.Color
                     #right
                     if currCol + 1 >= 0 and currCol + 1 < 8 and currRow + 1 >= 0 and currRow + 1 < 8:
                         if (currRow + 1, currCol + 1) in pieceDict:
@@ -846,8 +869,9 @@ def checkedMoves(piece):
                 moves = []
                 if singlePiece.Type == 'p':
                     currRow, currCol = singlePiece.Pos
+                    allyColor = singlePiece.Color
                     #right
-                    if currCol - 1 >= 0 and currCol - 1 < 8 and currRow + 1 >= 0 and currRow + 1 < 8:
+                    if currCol + 1 >= 0 and currCol + 1 < 8 and currRow - 1 >= 0 and currRow - 1 < 8:
                         if (currRow - 1, currCol + 1) in pieceDict:
                             if pieceDict[(currRow - 1, currCol + 1)].Color != allyColor:
                                 moves.append((currRow - 1, currCol + 1))
@@ -907,11 +931,15 @@ def buildBoardSpaces():
 def endGame(userLose):
     global running
     if userLose:
+        message_display('The AI Won', (5,105))
+        pygame.display.update()
+        time.sleep(15)
         running = False
-        #display lost
     else:
+        message_display('You Won', (5,105))
+        pygame.display.update()
+        time.sleep(15)
         running = False
-        #display won
 
 
 # run the main function only if this module is executed as the main script

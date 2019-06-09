@@ -497,7 +497,6 @@ def main():
     
     # define a variable to control the main loop
     pygame.display.update()
-    running = True
     useless = 0
     global running
     global userTurn
@@ -602,10 +601,11 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
                 del mimicBoard[oldPos]
                 piece.movePiece(move)
                 mimicBoard[move] = piece
-                if (oldPos, move, depth,alpha) not in moveDict:
+                if (oldPos, move, depth,alpha,bestValue) not in moveDict:
                     potentialBestValue, _, _ = deepBlue(depth - 1, mimicBoard, alpha, beta, not maxWhite)
-                    moveDict.append((oldPos, move, depth,alpha))
+                    moveDict.append((oldPos, move, depth,alpha,bestValue))
                     if bestValue < potentialBestValue:
+                        moveDict.remove((oldPos, move, depth, alpha,bestValue))
                         bestValue = potentialBestValue
                 del mimicBoard[move]
                 piece.movePiece(oldPos)
@@ -614,13 +614,14 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
                     alpha = bestValue
                 if beta <= alpha:
                     return bestValue, None, None
+        if bestValue == 99999:
+            bestValue = 0
         return bestValue, None, None
     else:
         bestMove = None
         bestPiece = None
         bestValue = 99999
         changeIt = False
-        potentialBestValue = bestValue
         for _, piece in gameBoard.items():
             if piece.Color == 'b':
                 list.append(piece)
@@ -638,10 +639,11 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
                 del mimicBoard[oldPos]
                 piece.movePiece(move)
                 mimicBoard[move] = piece
-                if (oldPos, move, depth, beta) not in moveDict:
+                if (oldPos, move, depth, beta,bestValue) not in moveDict:
                     potentialBestValue, _, _ = deepBlue(depth - 1, mimicBoard, alpha, beta, not maxWhite)
-                    moveDict.append((oldPos, move, depth, beta))
+                    moveDict.append((oldPos, move, depth, beta,bestValue))
                     if bestValue > potentialBestValue:
+                        moveDict.remove((oldPos, move, depth, beta,bestValue))
                         changeIt = True
                 del mimicBoard[move]
                 piece.movePiece(oldPos)
@@ -656,10 +658,10 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
                     return bestValue, bestMove, bestPiece
                 changeIt = False
             if bestPiece == None and len(moves) > 0:
-                bestValue = potentialBestValue
                 bestMove = moves[0]
                 bestPiece = piece.Pos
-        print(str(bestPiece) + str(bestValue))
+        if bestValue == -99999:
+            bestValue = 0
         return bestValue, bestMove, bestPiece
 
 

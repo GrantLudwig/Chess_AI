@@ -28,6 +28,8 @@ moveDict = [] #list of checked moves to speed up ai
 wChecked = False
 bChecked = False
 running = True
+bCheckedPieces = []
+wCheckedPieces = []
 
 #trying something out here
 pieceDict = {} # dict of pieces
@@ -543,7 +545,7 @@ def main():
                                 highlightPiece(pieceRect)
                                 done = highlightMoves(piece, pieceRect)
                                 if done:
-                                    running = False
+                                    endGame(True)
                                 pieceClicked = piece
                                 pygame.display.update()
                                 break
@@ -740,35 +742,47 @@ def pawnCheck(queenImage):
 def kingChecked():
     global wChecked
     global bChecked
+    global bCheckedPieces
+    global wCheckedPieces
     whitePieceList = []
     blackPieceList = []
     wKing = None
     bKing = None
+    changedW = False
+    changedB = False
     for _, piece in pieceDict.items():
         if piece.Color == 'b': #white checked
             if piece.Type == 'k':
                 bKing = piece.Pos
-            blackPieceList.append(moveList(piece))
+            blackPieceList.append(piece)
         else: #black checked
             if piece.Type == 'k':
                 wKing = piece.Pos
-            whitePieceList.append(moveList(piece))
+            whitePieceList.append(piece)
     if wKing == None:
         endGame(True)
     elif bKing == None:
         endGame(False)
-    for killMoves in blackPieceList:
-        if wKing in killMoves:
-            wChecked = True
-            break
-        else:
-            wChecked = False
-    for killMoves in whitePieceList:
-        if bKing in killMoves:
-            bChecked = True
-            break
-        else:
-            bChecked = False
+    for singlePiece in blackPieceList:
+        moves = moveList(singlePiece)
+        for move in moves:
+            if move == wKing:
+                wChecked = True
+                wCheckedPieces.append(singlePiece.Pos)
+                changedW = True
+    if not changedW:
+        wChecked = False
+        wCheckedPieces.clear()
+    for singlePiece in whitePieceList:
+        moves = moveList(singlePiece)
+        for move in moves:
+            if move == wKing:
+                bChecked = True
+                bCheckedPieces.append(singlePiece.Pos)
+                changedB = True
+    if not changedB:
+        bChecked = False
+        bCheckedPieces.clear()
 
 # return move list, return true if game dead
 def checkedMoves(piece):
@@ -860,7 +874,19 @@ def checkedMoves(piece):
             return list, True
         return list, False
     else:
-        return list, False
+        print(bCheckedPieces, wCheckedPieces)
+        list = moveList(piece)
+        actualMoves = []
+        print("LIST", list)
+        for move in list:
+            print("Checking", move)
+            if piece.Color == 'b':
+                if move in bCheckedPieces:
+                    actualMoves.append(move)
+            else:
+                if move in wCheckedPieces:
+                    actualMoves.append(move)
+        return actualMoves, False
 
 def calcClock(timeStart, currentTime):
     secs = int(currentTime - timeStart)

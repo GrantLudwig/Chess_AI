@@ -25,6 +25,9 @@ nothing = None #for doing nothing
 aiCapture = [] #list of pieces captured by ai
 userCapture = [] #list of pieces captured by user
 moveDict = [] #list of checked moves to speed up ai
+wChecked = False
+bChecked = False
+running = True
 
 #trying something out here
 pieceDict = {} # dict of pieces
@@ -69,6 +72,7 @@ def moveList(piece):
         enemyColor =  'w'
     else:
         enemyColor = 'b'
+
     #pawn
     #need bounds checking
     if piece.Type == 'p': 
@@ -492,10 +496,12 @@ def main():
     pygame.display.update()
     running = True
     useless = 0
+    global running
+    global userTurn
+    useless = 0
+    global pieceClicked
 
     # main loop
-    global userTurn
-    global pieceClicked
     global moveDict
 
     while running:
@@ -532,7 +538,9 @@ def main():
                             if pieceRect.collidepoint(x, y):
                                 removePastHighlight()
                                 highlightPiece(pieceRect)
-                                highlightMoves(piece, pieceRect)
+                                done = highlightMoves(piece, pieceRect)
+                                if done:
+                                    running = False
                                 pieceClicked = piece
                                 pygame.display.update()
                                 break
@@ -550,6 +558,7 @@ def main():
                                 removePastHighlight()
                                 pieceClicked = None
                                 pygame.display.update()
+                                kingChecked()
                                 userTurn = False
                                 break
             # only do something if the event is of type QUIT
@@ -575,7 +584,13 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
             if piece.Color == 'w':
                 list.append(piece)
         for piece in list:
-            moves = moveList(piece)
+            moves = None
+            if bChecked:
+                moves, done = checkedMoves(piece)
+                if done:
+                    return bestValue, (-1,-1), (-1,-1)
+            else:
+                moves = moveList(piece)
             for move in moves:
                 oldPos = deepcopy(piece.Pos)
                 mimicBoard = deepcopy(gameBoard)
@@ -593,8 +608,8 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
                 if alpha < bestValue:
                     alpha = bestValue
                 if beta <= alpha:
-                    return bestValue, bestMove, bestPiece
-        return bestValue, bestMove, bestPiece
+                    return bestValue, None, None
+        return bestValue, None, None
     else:
         bestMove = None
         bestPiece = None
@@ -605,7 +620,13 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
             if piece.Color == 'b':
                 list.append(piece)
         for piece in list:
-            moves = moveList(piece)
+            moves = None
+            if bChecked:
+                moves, done = checkedMoves(piece)
+                if done:
+                    return bestValue, (-1,-1), (-1,-1)
+            else:
+                moves = moveList(piece)
             for move in moves:
                 oldPos = deepcopy(piece.Pos)
                 mimicBoard = deepcopy(gameBoard)
@@ -675,7 +696,15 @@ def removePastHighlight():
     displayPieces()
 
 def highlightMoves(piece, pieceRect):
-    list = moveList(piece)
+    global wChecked
+    global bChecked
+    list = []
+    if wChecked:
+        list, done = checkedMoves(piece)
+        if done:
+            return True
+    else:
+        list = moveList(piece)
     for place in list:
         high = pygame.Surface(pieceRect.size)
         high.set_alpha(100)
@@ -684,6 +713,8 @@ def highlightMoves(piece, pieceRect):
         moveClickList.append((thing, place))
 
 def kingChecked():
+    global wChecked
+    global bChecked
     whitePieceList = []
     blackPieceList = []
     wKing = None
@@ -697,14 +728,113 @@ def kingChecked():
             if piece.Type == 'k':
                 wKing = piece.Pos
             whitePieceList.append(moveList(piece))
+    print(wKing, bKing)
+    if wKing == None:
+        endGame(True)
+    elif bKing == None:
+        endGame(False)
     for killMoves in blackPieceList:
         if wKing in killMoves:
-            #screen.fill((255,255,255))
-            nothing = None
+            wChecked = True
+            break
+        else:
+            wChecked = False
     for killMoves in whitePieceList:
         if bKing in killMoves:
-            #screen.fill((0,0,0))
-            nothing = None
+            bChecked = True
+            break
+        else:
+            bChecked = False
+
+# return move list, return true if game dead
+def checkedMoves(piece):
+    global wChecked
+    global bChecked
+    pieceList = []
+    list = [] #list of moves king can do
+    if piece.Type == 'k':
+        currRow, currCol = piece.Pos
+        allyColor = piece.Color
+        #down
+        row = currRow + 1
+        kingCheck(row, currCol, list, allyColor)
+        #up
+        row = currRow - 1
+        kingCheck(row, currCol, list, allyColor)
+        #left
+        col = currCol - 1
+        kingCheck(currRow, col, list, allyColor)
+        #right
+        col = currCol + 1
+        kingCheck(currRow, col, list, allyColor)
+        #down left
+        row = currRow + 1
+        col = currCol - 1
+        kingCheck(row, col, list, allyColor)
+        #down right
+        row = currRow + 1
+        col = currCol + 1
+        kingCheck(row, col, list, allyColor)
+        #up left
+        row = currRow - 1
+        col = currCol - 1
+        kingCheck(row, col, list, allyColor)
+        #up right
+        row = currRow - 1
+        col = currCol + 1
+        kingCheck(row, col, list, allyColor)
+        #now prune moves
+        if piece.Color == 'w' and wChecked:
+            for _, otherPiece in pieceDict.items():
+                if otherPiece.Color == 'b':
+                    pieceList.append(otherPiece)
+            for singlePiece in pieceList:
+                moves = []
+                if singlePiece.Type == 'p':
+                    currRow, currCol = singlePiece.Pos
+                    #right
+                    if currCol + 1 >= 0 and currCol + 1 < 8 and currRow + 1 >= 0 and currRow + 1 < 8:
+                        if (currRow + 1, currCol + 1) in pieceDict:
+                            if pieceDict[(currRow + 1, currCol + 1)].Color != allyColor:
+                                moves.append((currRow + 1, currCol + 1))
+                    #left
+                    if currCol - 1 >= 0 and currCol - 1 < 8 and currRow + 1 >= 0 and currRow + 1 < 8:
+                        if (currRow + 1, currCol - 1) in pieceDict:
+                            if pieceDict[(currRow + 1, currCol - 1)].Color != allyColor:
+                                moves.append((currRow + 1, currCol - 1))
+                else:
+                    moves = moveList(singlePiece)
+                for move in moves:
+                    if move in list:
+                        list.remove(move)
+        elif piece.Color == 'b' and bChecked:
+            for _, otherPiece in pieceDict.items():
+                if otherPiece.Color == 'w':
+                    pieceList.append(otherPiece)
+            for singlePiece in pieceList:
+                moves = []
+                if singlePiece.Type == 'p':
+                    currRow, currCol = singlePiece.Pos
+                    #right
+                    if currCol - 1 >= 0 and currCol - 1 < 8 and currRow + 1 >= 0 and currRow + 1 < 8:
+                        if (currRow - 1, currCol + 1) in pieceDict:
+                            if pieceDict[(currRow - 1, currCol + 1)].Color != allyColor:
+                                moves.append((currRow - 1, currCol + 1))
+                    #left
+                    if currCol - 1 >= 0 and currCol - 1 < 8 and currRow - 1 >= 0 and currRow - 1 < 8:
+                        if (currRow - 1, currCol - 1) in pieceDict:
+                            if pieceDict[(currRow - 1, currCol - 1)].Color != allyColor:
+                                moves.append((currRow - 1, currCol - 1))
+                else:
+                    moves = moveList(singlePiece)
+                for move in moves:
+                    if move in list:
+                        list.remove(move)
+        if len(list) < 1:
+            return list, True
+        return list, False
+    else:
+        return list, False
 
 def calcClock(timeStart, currentTime):
     secs = int(currentTime - timeStart)
@@ -744,6 +874,16 @@ def buildBoardSpaces():
         for row in range(0, 8):
             rowSpace = boardSquareSize * row + padding
             board[(row,col)] = (colSpace, rowSpace)
+
+def endGame(userLose):
+    global running
+    if userLose:
+        running = False
+        #display lost
+    else:
+        running = False
+        #display won
+
 
 # run the main function only if this module is executed as the main script
 # (if you import this as a module then nothing is executed)

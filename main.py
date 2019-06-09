@@ -7,7 +7,6 @@ import time
 from copy import deepcopy
 import sys
 from random import random
-from multiprocessing.pool import ThreadPool
 
 boardSquareSize = 64
 pieceSize = 45
@@ -25,6 +24,7 @@ userTurn = True
 nothing = None #for doing nothing
 aiCapture = [] #list of pieces captured by ai
 userCapture = [] #list of pieces captured by user
+moveDict = [] #list of checked moves to speed up ai
 
 #trying something out here
 pieceDict = {} # dict of pieces
@@ -419,7 +419,7 @@ def getBoard(bPos):
  
 # define a main function
 def main():
-    aiDepth = int(sys.argv[1])
+    aiDepth = int(sys.argv[1]) * 2
     # initialize the pygame module
     pygame.init()
     # load and set the logo
@@ -489,13 +489,15 @@ def main():
     #clock = pygame.time.Clock()
     
     # define a variable to control the main loop
+    pygame.display.update()
     running = True
-    global userTurn
     useless = 0
-    global pieceClicked
-
 
     # main loop
+    global userTurn
+    global pieceClicked
+    global moveDict
+
     while running:
         message_display(calcClock(startTime, time.time()), (5,35))
         #message_display(calcTimer(startTime,time.time()), (5,105))
@@ -503,6 +505,7 @@ def main():
         #AI
         if not userTurn:
             useless, targetMove, targetPiece = deepBlue(aiDepth, pieceDict, -100000, 100000, False)
+            #moveDict = []
             aiPiece = pieceDict[targetPiece]
             del pieceDict[aiPiece.Pos]
             aiPiece.movePiece(targetMove)
@@ -557,6 +560,7 @@ def main():
 #Chess Ai
 #returns best value, move position, piece position
 def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
+    global moveDict
     list = []
     if depth < 1:
         totalValue = 0
@@ -565,6 +569,8 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
         return totalValue, (-1,-1), (-1,-1)
     if maxWhite:
         bestValue = -99999
+        bestMove = None
+        bestPiece = None
         for _, piece in gameBoard.items():
             if piece.Color == 'w':
                 list.append(piece)
@@ -576,12 +582,14 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
                 del mimicBoard[oldPos]
                 piece.movePiece(move)
                 mimicBoard[move] = piece
-                potentialBestValue, bestMove, bestPiece = deepBlue(depth - 1, mimicBoard, alpha, beta, not maxWhite)
+                if (oldPos, move, depth,alpha) not in moveDict:
+                    potentialBestValue, _, _ = deepBlue(depth - 1, mimicBoard, alpha, beta, not maxWhite)
+                    moveDict.append((oldPos, move, depth,alpha))
+                    if bestValue < potentialBestValue:
+                        bestValue = potentialBestValue
                 del mimicBoard[move]
                 piece.movePiece(oldPos)
                 mimicBoard[oldPos] = piece
-                if bestValue < potentialBestValue:
-                    bestValue = potentialBestValue
                 if alpha < bestValue:
                     alpha = bestValue
                 if beta <= alpha:
@@ -591,6 +599,8 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
         bestMove = None
         bestPiece = None
         bestValue = 99999
+        changeIt = False
+        potentialBestValue = bestValue
         for _, piece in gameBoard.items():
             if piece.Color == 'b':
                 list.append(piece)
@@ -602,11 +612,15 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
                 del mimicBoard[oldPos]
                 piece.movePiece(move)
                 mimicBoard[move] = piece
-                potentialBestValue, _, _ = deepBlue(depth - 1, mimicBoard, alpha, beta, not maxWhite)
+                if (oldPos, move, depth, beta) not in moveDict:
+                    potentialBestValue, _, _ = deepBlue(depth - 1, mimicBoard, alpha, beta, not maxWhite)
+                    moveDict.append((oldPos, move, depth, beta))
+                    if bestValue > potentialBestValue:
+                        changeIt = True
                 del mimicBoard[move]
                 piece.movePiece(oldPos)
                 mimicBoard[oldPos] = piece
-                if bestValue > potentialBestValue:
+                if changeIt:
                     bestValue = potentialBestValue
                     bestMove = move
                     bestPiece = piece.Pos
@@ -614,66 +628,18 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
                     beta = bestValue
                 if beta <= alpha:
                     return bestValue, bestMove, bestPiece
+                changeIt = False
+            if bestPiece == None and len(moves) > 0:
+                bestValue = potentialBestValue
+                bestMove = moves[0]
+                bestPiece = piece.Pos
+        print(str(bestPiece) + str(bestValue))
         return bestValue, bestMove, bestPiece
-
-#Chess AI
-#def deepBlue(depth, pieceLocations, teamColor, moveValue):
-#    if depth < 1:
-#        return (moveValue, (-1,-1), (-1,-1))
-#    list = []
-#    if teamColor == 'b':
-#        enemyColor = 'w'
-#    else:
-#        enemyColor = 'b'
-#    totalValue = 0
-#    bestValue = moveValue
-#    bestMove = (-1,-1)
-#    bestPiece = (-1,-1)
-#    mimicBoard = deepcopy(pieceLocations)
-#    for _, piece in mimicBoard.items():
-#        if piece.Color == teamColor:
-#            list.append(piece)
-#    for piece in list:
-#        print(piece.Type,teamColor)
-#        moves = moveList(piece)
-#        oldPos = deepcopy(piece.Pos)
-#        for move in moves: 
-#            mimicBoard = deepcopy(pieceLocations)
-#            del mimicBoard[piece.Pos]
-#            piece.movePiece(move)
-#            mimicBoard[move] = piece
-#            for _, newPiece in mimicBoard.items():
-#                totalValue = totalValue + newPiece.Value
-#            potentialValue, potentialMove, potentialPiece = deepBlue(depth - 1, mimicBoard, enemyColor, totalValue)
-#            del mimicBoard[piece.Pos]
-#            piece.movePiece(oldPos)
-#            mimicBoard[oldPos] = piece
-#            if teamColor == 'b':
-#                if potentialValue < bestValue:
-#                    bestValue = potentialValue
-#                    bestMove = potentialMove
-#                    bestPiece = piece.Pos
-#            else:
-#                if potentialValue > bestValue:
-#                    bestValue = potentialValue
-#    if bestPiece == (-1,-1):
-#        found = False
-#        while not found:
-#            num = int(random()*len(list))
-#            bestPiece = list[num].Pos
-#            randMoves = moveList(mimicBoard[bestPiece])
-#            if len(randMoves) > 0:
-#                num = int(random()*len(randMoves))
-#                bestMove = randMoves[num]
-#                found = True
-#            else:
-#                del list[num]
-
-#    return (bestValue, bestMove, bestPiece)
 
 
 def displayPieces():
     for _, piece in pieceDict.items():
+        #print(str(piece.Pos))
         screen.blit(piece.getPiece(), piece.getPos())
 
 def updateCapture(user):
@@ -768,6 +734,8 @@ def message_display(text, pos):
     width, height = mediumText.size(text)
     pygame.draw.rect(screen, (255,255,255), (pos[0], pos[1], width+2, height))
     screen.blit(TextSurf, TextRect)
+    pygame.display.update()
+
 
 def buildBoardSpaces():
     padding = int((boardSquareSize-pieceSize)/2)

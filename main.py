@@ -477,7 +477,7 @@ def main():
 
     #Text
     message_display('Game Time:', (5,0))
-    message_display('Play Timer:', (5,70))
+    #message_display('Play Timer:', (5,70))
     message_display('Captured by AI', (805,0))
     message_display('Captured by User', (805,256))
     
@@ -496,7 +496,7 @@ def main():
     # main loop
     while running:
         message_display(calcClock(startTime, time.time()), (5,35))
-        message_display(calcTimer(startTime,time.time()), (5,105))
+        #message_display(calcTimer(startTime,time.time()), (5,105))
         pygame.display.update()
         #AI
         if not userTurn:
@@ -590,8 +590,6 @@ def deepBlue(depth, pieceLocations, teamColor, moveValue):
             else:
                 if potentialValue > bestValue:
                     bestValue = potentialValue
-                    bestMove = potentialMove
-                    bestPiece = piece.Pos
     if bestPiece == (-1,-1):
         found = False
         while not found:

@@ -596,13 +596,13 @@ def displayPieces():
 def updateCapture(user):
     if not user:
         #update AI
-        for i in range(0,len(userCapture)):
+        for i in range(0,len(aiCapture)):
             if i < 5:
-                screen.blit(userCapture[i], (805 + i * 50, 35))
+                screen.blit(aiCapture[i], (805 + i * 50, 35))
             elif i < 10:
-                screen.blit(userCapture[i], (805 + (i - 5) * 50, 85))
+                screen.blit(aiCapture[i], (805 + (i - 5) * 50, 85))
             elif i < 15:
-                screen.blit(userCapture[i], (805 + (i - 10) * 50, 135))
+                screen.blit(aiCapture[i], (805 + (i - 10) * 50, 135))
     else:
         #update user
         for i in range(0,len(userCapture)):

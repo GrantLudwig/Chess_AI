@@ -497,6 +497,20 @@ def main():
         message_display(calcClock(startTime, time.time()), (5,35))
         message_display(calcTimer(startTime,time.time()), (5,105))
         pygame.display.update()
+        #AI
+        if not userTurn:
+            useless, targetMove, targetPiece = deepBlue(aiDepth,pieceDict, 'b', 0)
+            aiPiece = pieceDict[targetPiece]
+            del pieceDict[aiPiece.Pos]
+            aiPiece.movePiece(targetMove)
+            if targetMove in pieceDict:
+                userCapture.append(pieceDict[targetMove].getPiece())
+                updateCapture(False)
+            pieceDict[targetMove] = aiPiece
+            removePastHighlight()
+            pygame.display.update()
+            kingChecked()
+            userTurn = True
         # event handling, gets all event from the event queue
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN and userTurn:
@@ -528,20 +542,7 @@ def main():
                             removePastHighlight()
                             pieceClicked = None
                             pygame.display.update()
-                            #AI
                             userTurn = False
-                            kingChecked()
-                            useless, targetMove, targetPiece = deepBlue(aiDepth,pieceDict, 'b', 0)
-                            aiPiece = pieceDict[targetPiece]
-                            del pieceDict[aiPiece.Pos]
-                            aiPiece.movePiece(targetMove)
-                            if targetMove in pieceDict:
-                                userCapture.append(pieceDict[targetMove].getPiece())
-                                updateCapture(False)
-                            pieceDict[targetMove] = aiPiece
-                            removePastHighlight()
-                            pygame.display.update()
-                            userTurn = True
                             break
             # only do something if the event is of type QUIT
             elif event.type == pygame.QUIT:

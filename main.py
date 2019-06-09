@@ -7,6 +7,7 @@ import time
 from copy import deepcopy
 import sys
 from random import random
+from multiprocessing.pool import ThreadPool
 
 boardSquareSize = 64
 pieceSize = 45
@@ -500,7 +501,7 @@ def main():
         pygame.display.update()
         #AI
         if not userTurn:
-            useless, targetMove, targetPiece = deepBlue(aiDepth,pieceDict, 'b', 0)
+            useless, targetMove, targetPiece = deepBlue(aiDepth, pieceDict, -100000, 100000, False)
             aiPiece = pieceDict[targetPiece]
             del pieceDict[aiPiece.Pos]
             aiPiece.movePiece(targetMove)
@@ -552,58 +553,122 @@ def main():
                 # change the value to False, to exit the main loop
                 running = False
 
-def deepBlue(depth, pieceLocations, teamColor, moveValue):
-    if depth < 1:
-        return (moveValue, (-1,-1), (-1,-1))
+#Chess Ai
+#returns best value, move position, piece position
+def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
     list = []
-    if teamColor == 'b':
-        enemyColor = 'w'
+    if depth < 1:
+        totalValue = 0
+        for _, piece in gameBoard.items():
+            totalValue = totalValue + piece.Value
+        return totalValue, (-1,-1), (-1,-1)
+    if maxWhite:
+        bestValue = -99999
+        for _, piece in gameBoard.items():
+            if piece.Color == 'w':
+                list.append(piece)
+        for piece in list:
+            moves = moveList(piece)
+            for move in moves:
+                oldPos = deepcopy(piece.Pos)
+                mimicBoard = deepcopy(gameBoard)
+                del mimicBoard[oldPos]
+                piece.movePiece(move)
+                mimicBoard[move] = piece
+                potentialBestValue, bestMove, bestPiece = deepBlue(depth - 1, mimicBoard, alpha, beta, not maxWhite)
+                del mimicBoard[move]
+                piece.movePiece(oldPos)
+                mimicBoard[oldPos] = piece
+                if bestValue < potentialBestValue:
+                    bestValue = potentialBestValue
+                if alpha < bestValue:
+                    alpha = bestValue
+                if beta <= alpha:
+                    return bestValue, bestMove, bestPiece
+        return bestValue, bestMove, bestPiece
     else:
-        enemyColor = 'b'
-    totalValue = 0
-    bestValue = moveValue
-    bestMove = (-1,-1)
-    bestPiece = (-1,-1)
-    mimicBoard = deepcopy(pieceLocations)
-    for _, piece in mimicBoard.items():
-        if piece.Color == teamColor:
-            list.append(piece)
-    for piece in list:
-        moves = moveList(piece)
-        oldPos = deepcopy(piece.Pos)
-        for move in moves: 
-            mimicBoard = deepcopy(pieceLocations)
-            del mimicBoard[piece.Pos]
-            piece.movePiece(move)
-            mimicBoard[move] = piece
-            for _, newPiece in mimicBoard.items():
-                totalValue = totalValue + newPiece.Value
-            potentialValue, potentialMove, potentialPiece = deepBlue(depth - 1, mimicBoard, enemyColor, totalValue)
-            del mimicBoard[piece.Pos]
-            piece.movePiece(oldPos)
-            mimicBoard[oldPos] = piece
-            if teamColor == 'b':
-                if potentialValue < bestValue:
-                    bestValue = potentialValue
-                    bestMove = potentialMove
+        bestMove = None
+        bestPiece = None
+        bestValue = 99999
+        for _, piece in gameBoard.items():
+            if piece.Color == 'b':
+                list.append(piece)
+        for piece in list:
+            moves = moveList(piece)
+            for move in moves:
+                oldPos = deepcopy(piece.Pos)
+                mimicBoard = deepcopy(gameBoard)
+                del mimicBoard[oldPos]
+                piece.movePiece(move)
+                mimicBoard[move] = piece
+                potentialBestValue, _, _ = deepBlue(depth - 1, mimicBoard, alpha, beta, not maxWhite)
+                del mimicBoard[move]
+                piece.movePiece(oldPos)
+                mimicBoard[oldPos] = piece
+                if bestValue > potentialBestValue:
+                    bestValue = potentialBestValue
+                    bestMove = move
                     bestPiece = piece.Pos
-            else:
-                if potentialValue > bestValue:
-                    bestValue = potentialValue
-    if bestPiece == (-1,-1):
-        found = False
-        while not found:
-            num = int(random()*len(list))
-            bestPiece = list[num].Pos
-            randMoves = moveList(mimicBoard[bestPiece])
-            if len(randMoves) > 0:
-                num = int(random()*len(randMoves))
-                bestMove = randMoves[num]
-                found = True
-            else:
-                del list[num]
+                if beta > bestValue:
+                    beta = bestValue
+                if beta <= alpha:
+                    return bestValue, bestMove, bestPiece
+        return bestValue, bestMove, bestPiece
 
-    return (bestValue, bestMove, bestPiece)
+#Chess AI
+#def deepBlue(depth, pieceLocations, teamColor, moveValue):
+#    if depth < 1:
+#        return (moveValue, (-1,-1), (-1,-1))
+#    list = []
+#    if teamColor == 'b':
+#        enemyColor = 'w'
+#    else:
+#        enemyColor = 'b'
+#    totalValue = 0
+#    bestValue = moveValue
+#    bestMove = (-1,-1)
+#    bestPiece = (-1,-1)
+#    mimicBoard = deepcopy(pieceLocations)
+#    for _, piece in mimicBoard.items():
+#        if piece.Color == teamColor:
+#            list.append(piece)
+#    for piece in list:
+#        print(piece.Type,teamColor)
+#        moves = moveList(piece)
+#        oldPos = deepcopy(piece.Pos)
+#        for move in moves: 
+#            mimicBoard = deepcopy(pieceLocations)
+#            del mimicBoard[piece.Pos]
+#            piece.movePiece(move)
+#            mimicBoard[move] = piece
+#            for _, newPiece in mimicBoard.items():
+#                totalValue = totalValue + newPiece.Value
+#            potentialValue, potentialMove, potentialPiece = deepBlue(depth - 1, mimicBoard, enemyColor, totalValue)
+#            del mimicBoard[piece.Pos]
+#            piece.movePiece(oldPos)
+#            mimicBoard[oldPos] = piece
+#            if teamColor == 'b':
+#                if potentialValue < bestValue:
+#                    bestValue = potentialValue
+#                    bestMove = potentialMove
+#                    bestPiece = piece.Pos
+#            else:
+#                if potentialValue > bestValue:
+#                    bestValue = potentialValue
+#    if bestPiece == (-1,-1):
+#        found = False
+#        while not found:
+#            num = int(random()*len(list))
+#            bestPiece = list[num].Pos
+#            randMoves = moveList(mimicBoard[bestPiece])
+#            if len(randMoves) > 0:
+#                num = int(random()*len(randMoves))
+#                bestMove = randMoves[num]
+#                found = True
+#            else:
+#                del list[num]
+
+#    return (bestValue, bestMove, bestPiece)
 
 
 def displayPieces():

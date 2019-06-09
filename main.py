@@ -497,7 +497,6 @@ def main():
     
     # define a variable to control the main loop
     pygame.display.update()
-    running = True
     useless = 0
     global running
     global userTurn

@@ -19,7 +19,7 @@ startTime = time.time()
 chessBoard = pygame.image.load("assets/board.png")
 moveClickList = []
 pieceClicked = None
-aiDepth = None
+aiDepth = None # how many moves ahead the user wants the ai to look
 userTurn = True
 nothing = None #for doing nothing
 aiCapture = [] #list of pieces captured by ai
@@ -41,7 +41,7 @@ pieceDict = {} # dict of pieces
 class gamePiece():
 
     def __init__(self, pieceImg, pieceType, boardPos, color, value):
-        self.Piece = pygame.image.tostring(pieceImg,"RGBA") # pygame image of the piece
+        self.Piece = pygame.image.tostring(pieceImg,"RGBA") # pygame image of the piece, stored as a string buffer
         self.Pos = boardPos # position of the piece on board, (row,col)
         self.Color = color # single char, 'b' or 'w'
         self.Type = pieceType   # single char, what piece type it is
@@ -51,7 +51,7 @@ class gamePiece():
         self.Value = value # the value of a piece
         # add more attributes as needed
 
-    def getPiece(self):
+    def getPiece(self): #return the actual image, retreived from the string buffer
         return pygame.image.frombuffer(self.Piece, (45,45), "RGBA")
 
     def changePiece(self, img):
@@ -558,6 +558,7 @@ def main():
 
 #Chess Ai
 #returns best value, move position, piece position
+#uses minimax algorithm with alpha-beta pruning
 def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
     global moveDict
     list = []
@@ -566,7 +567,7 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
         for _, piece in gameBoard.items():
             totalValue = totalValue + piece.Value
         return totalValue, (-1,-1), (-1,-1)
-    if maxWhite:
+    if maxWhite: #white pieces
         bestValue = -99999
         bestMove = None
         bestPiece = None
@@ -587,7 +588,7 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
                 del mimicBoard[oldPos]
                 piece.movePiece(move)
                 mimicBoard[move] = piece
-                if (oldPos, move, depth,alpha,bestValue) not in moveDict:
+                if (oldPos, move, depth,alpha,bestValue) not in moveDict: #pruning moves that have already been checked to improve efficiency
                     potentialBestValue, _, _ = deepBlue(depth - 1, mimicBoard, alpha, beta, not maxWhite)
                     moveDict.append((oldPos, move, depth,alpha,bestValue))
                     if bestValue < potentialBestValue:
@@ -603,7 +604,7 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
         if bestValue == 99999:
             bestValue = 0
         return bestValue, None, None
-    else:
+    else: #black pieces
         bestMove = None
         bestPiece = None
         bestValue = 99999
@@ -625,7 +626,7 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
                 del mimicBoard[oldPos]
                 piece.movePiece(move)
                 mimicBoard[move] = piece
-                if (oldPos, move, depth, beta,bestValue) not in moveDict:
+                if (oldPos, move, depth, beta,bestValue) not in moveDict: #pruning moves that have already been checked to improve efficiency
                     potentialBestValue, _, _ = deepBlue(depth - 1, mimicBoard, alpha, beta, not maxWhite)
                     moveDict.append((oldPos, move, depth, beta,bestValue))
                     if bestValue > potentialBestValue:
@@ -655,7 +656,7 @@ def displayPieces():
     for _, piece in pieceDict.items():
         screen.blit(piece.getPiece(), piece.getPos())
 
-def updateCapture(user):
+def updateCapture(user): #move a captured piece to its appropriate location to the right of the game board
     if not user:
         #update AI
         for i in range(0,len(aiCapture)):
@@ -722,7 +723,7 @@ def pawnCheck(queenImage):
                     piece.Value = -90
                     pieceDict[piece.Pos] = piece
 
-def kingChecked():
+def kingChecked(): #determining if a king has been checked
     global wChecked
     global bChecked
     global bCheckedPieces
@@ -770,7 +771,7 @@ def kingChecked():
         bCheckedPieces.clear()
 
 # return move list, return true if game dead
-def checkedMoves(piece):
+def checkedMoves(piece): #evaluates which moves can be done in a Checked state
     global wChecked
     global bChecked
     global wKing
@@ -860,7 +861,7 @@ def checkedMoves(piece):
         if len(list) < 1:
             return list, True
         return list, False
-    else:
+    else: #determines what moves a non-king piece can make in a "checked" state
         list = moveList(piece)
         actualMoves = []
         for move in list:
@@ -874,7 +875,7 @@ def checkedMoves(piece):
             actualMoves, True
         return actualMoves, False
 
-def blocked(checkedPieces, move, kingPos):
+def blocked(checkedPieces, move, kingPos): #determines if a piece can "block" a check
     rKing, cKing = kingPos
     rMove, cMove = move
     for pos in checkedPieces:

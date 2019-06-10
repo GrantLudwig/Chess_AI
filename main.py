@@ -561,6 +561,9 @@ def main():
 #uses minimax algorithm with alpha-beta pruning
 def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
     global moveDict
+    global wChecked
+    global bChecked
+    kingChecked()
     list = []
     if depth < 1:
         totalValue = 0
@@ -576,7 +579,7 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
                 list.append(piece)
         for piece in list:
             moves = None
-            if bChecked:
+            if wChecked:
                 moves, done = checkedMoves(piece)
                 if done:
                     return -1000000, (-1,-1), (-1,-1)
@@ -860,7 +863,25 @@ def checkedMoves(piece): #evaluates which moves can be done in a Checked state
                         list.remove(move)
         if len(list) < 1:
             return list, True
-        return list, False
+        #future checking
+        actualList = []
+        for move in list:
+            oldPos = deepcopy(piece.Pos)
+            del pieceDict[oldPos]
+            piece.movePiece(move)
+            pieceDict[move] = piece
+            kingChecked()
+            if piece.Color == 'b':
+                if not bChecked:
+                    actualList.append(move)
+            else:
+                if not wChecked:
+                    actualList.append(move)
+            del pieceDict[move]
+            piece.movePiece(oldPos)
+            pieceDict[oldPos] = piece
+        kingChecked()
+        return actualList, False
     else: #determines what moves a non-king piece can make in a "checked" state
         list = moveList(piece)
         actualMoves = []

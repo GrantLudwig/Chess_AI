@@ -469,8 +469,8 @@ def main():
     pieceDict[(7,3)] = gamePiece(whiteQueen, 'q', (7,3), 'w', 90)
     pieceDict[(0,3)] = gamePiece(blackQueen, 'q', (0,3), 'b', -90)
     #Kings
-    pieceDict[(7,4)] = gamePiece(whiteKing, 'k', (7,4), 'w', 900)
-    pieceDict[(0,4)] = gamePiece(blackKing, 'k', (0,4), 'b', -900)
+    pieceDict[(7,4)] = gamePiece(whiteKing, 'k', (7,4), 'w', 9000)
+    pieceDict[(0,4)] = gamePiece(blackKing, 'k', (0,4), 'b', -9000)
 
     # all pieces displayed by this
     displayPieces()
@@ -498,6 +498,7 @@ def main():
         pygame.display.update()
         #AI
         if not userTurn:
+            kingChecked()
             useless, targetMove, targetPiece = deepBlue(aiDepth, pieceDict, -100000, 100000, False)
             aiPiece = pieceDict[targetPiece]
             del pieceDict[aiPiece.Pos]
@@ -514,6 +515,7 @@ def main():
         # event handling, gets all event from the event queue
         for event in pygame.event.get():
             if userTurn:
+                kingChecked()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x, y = event.pos
                     # detection for clicking on a piece
@@ -576,7 +578,7 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
             if bChecked:
                 moves, done = checkedMoves(piece)
                 if done:
-                    return bestValue, (-1,-1), (-1,-1)
+                    return -1000000, (-1,-1), (-1,-1)
             else:
                 moves = moveList(piece)
             for move in moves:
@@ -614,7 +616,7 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
             if bChecked:
                 moves, done = checkedMoves(piece)
                 if done:
-                    return bestValue, (-1,-1), (-1,-1)
+                    return 1000000, (-1,-1), (-1,-1)
             else:
                 moves = moveList(piece)
             for move in moves:
@@ -727,6 +729,8 @@ def kingChecked():
     global wCheckedPieces
     global wKing
     global bKing
+    wKing = None
+    bKing = None
     whitePieceList = []
     blackPieceList = []
     changedW = False
@@ -866,6 +870,8 @@ def checkedMoves(piece):
             else:
                 if move in wCheckedPieces or blocked(wCheckedPieces, move, wKing):
                     actualMoves.append(move)
+        if len(actualMoves) < 1:
+            actualMoves, True
         return actualMoves, False
 
 def blocked(checkedPieces, move, kingPos):
@@ -951,12 +957,12 @@ def endGame(userLose):
     if userLose:
         message_display('The AI Won', (5,105))
         pygame.display.update()
-        time.sleep(15)
+        time.sleep(10)
         running = False
     else:
         message_display('You Won', (5,105))
         pygame.display.update()
-        time.sleep(15)
+        time.sleep(10)
         running = False
 
 

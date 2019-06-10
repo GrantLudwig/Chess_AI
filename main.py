@@ -563,7 +563,6 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
     global moveDict
     global wChecked
     global bChecked
-    kingChecked()
     list = []
     if depth < 1:
         totalValue = 0
@@ -591,6 +590,7 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
                 del mimicBoard[oldPos]
                 piece.movePiece(move)
                 mimicBoard[move] = piece
+                kingChecked()
                 if (oldPos, move, depth,alpha,bestValue) not in moveDict: #pruning moves that have already been checked to improve efficiency
                     potentialBestValue, _, _ = deepBlue(depth - 1, mimicBoard, alpha, beta, not maxWhite)
                     moveDict.append((oldPos, move, depth,alpha,bestValue))
@@ -600,6 +600,7 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
                 del mimicBoard[move]
                 piece.movePiece(oldPos)
                 mimicBoard[oldPos] = piece
+                kingChecked()
                 if alpha < bestValue:
                     alpha = bestValue
                 if beta <= alpha:
@@ -629,6 +630,7 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
                 del mimicBoard[oldPos]
                 piece.movePiece(move)
                 mimicBoard[move] = piece
+                kingChecked()
                 if (oldPos, move, depth, beta,bestValue) not in moveDict: #pruning moves that have already been checked to improve efficiency
                     potentialBestValue, _, _ = deepBlue(depth - 1, mimicBoard, alpha, beta, not maxWhite)
                     moveDict.append((oldPos, move, depth, beta,bestValue))
@@ -638,6 +640,7 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
                 del mimicBoard[move]
                 piece.movePiece(oldPos)
                 mimicBoard[oldPos] = piece
+                kingChecked()
                 if changeIt:
                     bestValue = potentialBestValue
                     bestMove = move

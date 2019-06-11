@@ -42,4 +42,4 @@ When checked, you will only be able to make moves to make you unchecked. However
 Our algorithm using alpha beta pruning with the white pieces (user) maximizing and the black pieces (AI) minimizing. The algorithm will also prune moves that have been looked through in other iterations to improve performance. The algorithm/AI will still make moves that could be considered mistakes.
 
 ### Demo
-Demo Link: https://youtu.be/3qLtjBizD-M
+Demo Link: [https://youtu.be/3qLtjBizD-M]

@@ -958,12 +958,10 @@ def endGame(userLose):
     if userLose:
         message_display('The AI Won', (5,105))
         pygame.display.update()
-        time.sleep(10)
         running = False
     else:
         message_display('You Won', (5,105))
         pygame.display.update()
-        time.sleep(10)
         running = False
 
 

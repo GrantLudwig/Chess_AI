@@ -510,7 +510,8 @@ def main():
             removePastHighlight()
             pawnCheck(whiteQueen)
             pygame.display.update()
-            kingChecked()
+            if kingChecked():
+                endGame(True)
             userTurn = True
         # event handling, gets all event from the event queue
         for event in pygame.event.get():
@@ -549,7 +550,8 @@ def main():
                                 pieceClicked = None
                                 pawnCheck(whiteQueen)
                                 pygame.display.update()
-                                kingChecked()
+                                if kingChecked():
+                                    endGame(False)
                                 userTurn = False
                                 break
             if event.type == pygame.QUIT:
@@ -577,11 +579,12 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
             if piece.Color == 'w':
                 list.append(piece)
         for piece in list:
+            kingChecked()
             moves = None
             if wChecked:
                 moves, done = checkedMoves(piece)
                 if done:
-                    return -1000000, (-1,-1), (-1,-1)
+                    moves.clear()
             else:
                 moves = moveList(piece)
             for move in moves:
@@ -600,7 +603,6 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
                 del mimicBoard[move]
                 piece.movePiece(oldPos)
                 mimicBoard[oldPos] = piece
-                kingChecked()
                 if alpha < bestValue:
                     alpha = bestValue
                 if beta <= alpha:
@@ -617,11 +619,12 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
             if piece.Color == 'b':
                 list.append(piece)
         for piece in list:
+            kingChecked()
             moves = None
             if bChecked:
                 moves, done = checkedMoves(piece)
                 if done:
-                    return 1000000, (-1,-1), (-1,-1)
+                    moves.clear()
             else:
                 moves = moveList(piece)
             for move in moves:
@@ -640,7 +643,6 @@ def deepBlue(depth, gameBoard, alpha, beta, maxWhite):
                 del mimicBoard[move]
                 piece.movePiece(oldPos)
                 mimicBoard[oldPos] = piece
-                kingChecked()
                 if changeIt:
                     bestValue = potentialBestValue
                     bestMove = move
@@ -729,6 +731,7 @@ def pawnCheck(queenImage):
                     piece.Value = -90
                     pieceDict[piece.Pos] = piece
 
+#returns true if checkmate
 def kingChecked(): #determining if a king has been checked
     global wChecked
     global bChecked
@@ -752,9 +755,9 @@ def kingChecked(): #determining if a king has been checked
                 wKing = piece.Pos
             whitePieceList.append(piece)
     if wKing == None:
-        endGame(True)
+        return True
     elif bKing == None:
-        endGame(False)
+        return True
     for singlePiece in blackPieceList:
         moves = moveList(singlePiece)
         for move in moves:
@@ -775,6 +778,7 @@ def kingChecked(): #determining if a king has been checked
     if not changedB:
         bChecked = False
         bCheckedPieces.clear()
+    return False
 
 # return move list, return true if game dead
 def checkedMoves(piece): #evaluates which moves can be done in a Checked state
